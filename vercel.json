@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/$",
-      "dest": ".vscode/login.html"
+      "dest": ".vscode/landingpage-01.html"
     },
     {
       "src": "/(.*)",
