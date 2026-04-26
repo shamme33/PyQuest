@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break The Code</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 10px; font-size: 2.5em; text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); }
+        .header-info { text-align: center; margin-bottom: 30px; color: rgba(255, 255, 255, 0.8); }
+        .game-panel {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .progress-bar {
+            background: rgba(0, 0, 0, 0.3);
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .challenge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .challenge h3 { margin-bottom: 15px; color: #aed581; }
+        .challenge-code {
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin-bottom: 15px;
+            word-break: break-all;
+            border: 1px solid #667eea;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a2e;
+            border: 2px solid #667eea;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        input[type="text"]:focus { outline: none; border-color: #764ba2; box-shadow: 0 0 10px rgba(118, 75, 162, 0.5); }
+        .button-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        button {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        button:active { transform: translateY(0); }
+        .hint-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            flex: 0.3;
+        }
+        .feedback {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            animation: slideIn 0.3s;
+        }
+        .feedback.correct {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+        }
+        .feedback.incorrect {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: #ff6666;
+        }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .level-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .level-btn {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .level-btn:hover { background: rgba(102, 126, 234, 0.5); border-color: #667eea; }
+        .level-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-box .label { font-size: 12px; color: rgba(255, 255, 255, 0.7); }
+        .stat-box .value { font-size: 24px; font-weight: bold; color: #aed581; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 BREAK THE CODE</h1>
+        <div class="header-info">Crack various ciphers and encodings to advance</div>
+
+        <div class="game-panel">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="label">LEVEL</div>
+                    <div class="value" id="level-display">1</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">SOLVED</div>
+                    <div class="value" id="solved-display">0/6</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">ATTEMPTS</div>
+                    <div class="value" id="attempts-display">0</div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <div id="challenge-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const challenges = [
+            {
+                name: "Caesar Cipher",
+                description: "Shift each letter by 3 positions: KHOOR ZRUOG = ?",
+                encrypted: "KHOOR ZRUOG",
+                answer: "HELLO WORLD",
+                hint: "Shift back by 3 positions (or 23 forward)",
+                type: "caesar"
+            },
+            {
+                name: "ROT13",
+                description: "Decode this ROT13 message:",
+                encrypted: "URYYB JBEYQ",
+                answer: "HELLO WORLD",
+                hint: "ROT13 shifts by 13 positions",
+                type: "rot13"
+            },
+            {
+                name: "Base64",
+                description: "Decode this Base64 string:",
+                encrypted: "SGVsbG8gV29ybGQ=",
+                answer: "Hello World",
+                hint: "This is Base64 encoding",
+                type: "base64"
+            },
+            {
+                name: "Atbash Cipher",
+                description: "Decode: Z YVNNV",
+                encrypted: "Z YVNNV",
+                answer: "A MESSAGE",
+                hint: "Reverse alphabet: A=Z, B=Y, C=X...",
+                type: "atbash"
+            },
+            {
+                name: "Reverse String",
+                description: "What is this reversed?",
+                encrypted: "DLROW OLLEH",
+                answer: "HELLO WORLD",
+                hint: "Simply reverse the text",
+                type: "reverse"
+            },
+            {
+                name: "Hex Code",
+                description: "Decode the hex: 48656C6C6F",
+                encrypted: "48656C6C6F",
+                answer: "Hello",
+                hint: "Convert from hexadecimal to ASCII",
+                type: "hex"
+            }
+        ];
+
+        let currentChallenge = 0;
+        let solved = 0;
+        let attempts = 0;
+
+        function initChallenge() {
+            const challenge = challenges[currentChallenge];
+            const container = document.getElementById('challenge-container');
+            
+            container.innerHTML = `
+                <div class="challenge">
+                    <h3>Challenge ${currentChallenge + 1}: ${challenge.name}</h3>
+                    <p style="margin-bottom: 15px; color: rgba(255, 255, 255, 0.8);">${challenge.description}</p>
+                    <div class="challenge-code">${challenge.encrypted}</div>
+                    <input type="text" id="answer-input" placeholder="Enter the decoded answer..." 
+                           onkeypress="if(event.key==='Enter') checkAnswer()">
+                    <div class="button-group">
+                        <button onclick="checkAnswer()">Submit Answer</button>
+                        <button class="hint-btn" onclick="showHint()">💡 Hint</button>
+                    </div>
+                    <div id="feedback"></div>
+                    <div id="hint-box"></div>
+                </div>
+            `;
+            updateStats();
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('answer-input').value.trim().toUpperCase();
+            const challenge = challenges[currentChallenge];
+            const answer = challenge.answer.toUpperCase();
+            const feedbackDiv = document.getElementById('feedback');
+            attempts++;
+
+            if (input === answer) {
+                feedbackDiv.innerHTML = '✅ Correct! Moving to next challenge...';
+                feedbackDiv.className = 'feedback correct';
+                solved++;
+                updateStats();
+                
+                setTimeout(() => {
+                    currentChallenge++;
+                    if (currentChallenge < challenges.length) {
+                        initChallenge();
+                    } else {
+                        feedbackDiv.innerHTML = '🏆 ALL CHALLENGES COMPLETED! You are a master decoder!';
+                        feedbackDiv.className = 'feedback correct';
+                        document.getElementById('answer-input').disabled = true;
+                    }
+                }, 2000);
+            } else {
+                feedbackDiv.innerHTML = '❌ Incorrect. Try again!';
+                feedbackDiv.className = 'feedback incorrect';
+                document.getElementById('answer-input').value = '';
+            }
+            updateStats();
+        }
+
+        function showHint() {
+            const challenge = challenges[currentChallenge];
+            const hintBox = document.getElementById('hint-box');
+            hintBox.innerHTML = `<div class="feedback" style="background: rgba(255, 193, 7, 0.2); border-color: #ffc107; color: #ffc107;">
+                💡 Hint: ${challenge.hint}
+            </div>`;
+        }
+
+        function updateStats() {
+            document.getElementById('level-display').textContent = (currentChallenge + 1);
+            document.getElementById('solved-display').textContent = `${solved}/${challenges.length}`;
+            document.getElementById('attempts-display').textContent = attempts;
+            document.getElementById('progress-fill').style.width = ((currentChallenge + 1) / challenges.length) * 100 + '%';
+        }
+
+        initChallenge();
+    </script>
+</body>
+</html>

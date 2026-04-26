@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - PyQuest</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --navy:#0D1B2A;--navy-2:#162336;--navy-3:#1E2D42;--navy-4:#243650;
+  --blue:#4A90E2;--blue-light:#6BAEFF;--accent:#00C8FF;
+  --green:#00E5A0;--yellow:#FFB800;--red:#FF6B6B;--purple:#9B59B6;--orange:#FF8C00;
+  --white:#FFFFFF;--muted:#8EA8C3;
+  --border:rgba(74,144,226,0.18);--card:rgba(18,30,48,0.95);
+  --sw:268px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Sora',sans-serif;background:var(--navy);color:var(--white);display:flex;min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--navy);}::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px;}
+
+/* ===== SIDEBAR ===== */
+.sb{width:var(--sw);min-height:100vh;background:rgba(8,14,24,0.99);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:300;transition:transform .3s;}
+.sb-logo{padding:22px 20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);text-decoration:none;}
+.sb-logo-ico{width:38px;height:38px;background:linear-gradient(135deg,var(--red),var(--orange));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.sb-logo-txt{font-size:1.25rem;font-weight:800;color:var(--white);}
+.sb-logo-txt span{background:linear-gradient(135deg,var(--red),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sb-badge{margin:10px 14px;padding:7px 14px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.25);border-radius:9px;font-size:0.75rem;font-weight:700;color:#fca5a5;display:flex;align-items:center;gap:7px;}
+.sb-nav{flex:1;padding:8px 11px;overflow-y:auto;}
+.sb-lbl{font-size:0.67rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.6px;padding:10px 12px 5px;margin-top:4px;}
+.sb-btn{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;text-decoration:none;color:var(--muted);font-size:0.86rem;font-weight:500;transition:all .2s;margin-bottom:2px;cursor:pointer;border:1px solid transparent;background:none;width:100%;text-align:left;font-family:'Sora',sans-serif;position:relative;}
+.sb-btn:hover{background:rgba(255,107,107,0.08);color:var(--white);}
+.sb-btn.active{background:linear-gradient(135deg,rgba(255,107,107,0.18),rgba(255,140,0,0.06));color:var(--white);border-color:rgba(255,107,107,0.25);}
+.sb-btn.active::before{content:'';position:absolute;left:0;top:22%;bottom:22%;width:3px;background:linear-gradient(180deg,var(--red),var(--orange));border-radius:0 3px 3px 0;}
+.sb-btn i{width:19px;text-align:center;font-size:0.9rem;}
+.sb-pill{margin-left:auto;padding:2px 8px;border-radius:50px;font-size:0.64rem;font-weight:700;}
+.pill-red{background:rgba(255,107,107,0.2);color:var(--red);}
+.pill-green{background:rgba(0,229,160,0.2);color:var(--green);}
+.sb-foot{padding:11px;border-top:1px solid var(--border);}
+.sb-user{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;cursor:pointer;transition:background .2s;}
+.sb-user:hover{background:rgba(255,255,255,0.04);}
+.sb-av{width:36px;height:36px;background:linear-gradient(135deg,var(--red),var(--orange));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;}
+.sb-ui{flex:1;min-width:0;}
+.sb-un{font-size:0.83rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-ur{font-size:0.7rem;color:var(--muted);}
+.sb-out{color:var(--muted);font-size:0.78rem;cursor:pointer;transition:color .2s;padding:4px;}
+.sb-out:hover{color:var(--red);}
+
+/* ===== MAIN ===== */
+.mn{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{padding:14px 28px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,20,34,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
+.tb-l{display:flex;align-items:center;gap:12px;}
+.menu-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:6px;display:none;}
+.bc{font-size:0.83rem;color:var(--muted);}
+.bc span{color:var(--white);font-weight:600;}
+.tb-r{display:flex;align-items:center;gap:9px;}
+.tb-tag{padding:7px 14px;border-radius:9px;font-size:0.82rem;font-weight:700;border:1px solid;cursor:default;display:flex;align-items:center;gap:7px;}
+.tag-admin{background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.25);color:#fca5a5;}
+.tb-ico-btn{width:36px;height:36px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .2s;position:relative;}
+.tb-ico-btn:hover{border-color:var(--blue);color:var(--white);}
+.nb-dot{position:absolute;top:5px;right:6px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid var(--navy-2);}
+
+/* ===== PAGE ===== */
+.pc{padding:24px 28px;flex:1;}
+.sec{display:none;}
+.sec.active{display:block;}
+
+/* ===== CARDS ===== */
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:15px;margin-bottom:22px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:19px 17px;transition:all .3s;cursor:default;}
+.sc:hover{transform:translateY(-3px);border-color:var(--blue);box-shadow:0 10px 30px rgba(74,144,226,0.14);}
+.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sc-ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.sc-chg{font-size:0.7rem;font-weight:700;padding:3px 8px;border-radius:50px;}
+.chg-up{background:rgba(0,229,160,0.14);color:var(--green);}
+.chg-warn{background:rgba(255,184,0,0.14);color:var(--yellow);}
+.sc-num{font-size:1.9rem;font-weight:800;line-height:1;margin-bottom:4px;}
+.sc-lbl{font-size:0.78rem;color:var(--muted);}
+
+/* ===== SECTION HEADER ===== */
+.sec-hdr{margin-bottom:20px;}
+.sec-hdr h2{font-size:1.55rem;font-weight:800;margin-bottom:5px;}
+.sec-hdr p{color:var(--muted);font-size:0.88rem;}
+
+/* ===== CARD BASE ===== */
+.card{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:21px;}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px;}
+.card-ttl{font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.card-ttl i{color:var(--blue);}
+
+/* ===== TOOLBAR ===== */
+.tbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.srch{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;flex:1;min-width:180px;}
+.srch input{background:none;border:none;color:var(--white);font-size:0.86rem;outline:none;width:100%;font-family:'Sora',sans-serif;}
+.srch input::placeholder{color:var(--muted);}
+.srch i{color:var(--muted);font-size:0.88rem;}
+.fsel{background:var(--card);border:1px solid var(--border);color:var(--white);padding:8px 13px;border-radius:10px;font-size:0.84rem;outline:none;cursor:pointer;font-family:'Sora',sans-serif;}
+.fsel option{background:var(--navy-2);}
+
+/* ===== BUTTONS ===== */
+.btn-add{display:flex;align-items:center;gap:7px;padding:9px 20px;background:linear-gradient(135deg,var(--blue),var(--accent));border:none;border-radius:10px;color:white;font-size:0.87rem;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;transition:all .3s;white-space:nowrap;}
+.btn-add:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(74,144,226,0.4);}
+.btn-add.red{background:linear-gradient(135deg,var(--red),var(--orange));}
+.btn-add.red:hover{box-shadow:0 6px 20px rgba(255,107,107,0.4);}
+.btn-sm{padding:5px 12px;border-radius:8px;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;border:none;transition:all .2s;}
+.btn-edit{background:rgba(74,144,226,0.12);color:var(--blue-light);}
+.btn-edit:hover{background:var(--blue);color:white;}
+.btn-del{background:rgba(255,107,107,0.1);color:var(--red);}
+.btn-del:hover{background:var(--red);color:white;}
+.btn-role{background:rgba(155,89,182,0.12);color:#c084fc;}
+.btn-role:hover{background:var(--purple);color:white;}
+.btn-view{background:rgba(0,229,160,0.1);color:var(--green);}
+.btn-view:hover{background:var(--green);color:var(--navy);}
+.btn-outline{padding:9px 20px;background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--white);font-size:0.86rem;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue-light);}
+
+/* ===== TABLE ===== */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:11px 14px;text-align:left;font-size:0.74rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid rgba(74,144,226,0.07);transition:background .15s;}
+tbody tr:hover{background:rgba(74,144,226,0.05);}
+tbody tr:last-child{border-bottom:none;}
+tbody td{padding:12px 14px;font-size:0.84rem;vertical-align:middle;}
+.td-usr{display:flex;align-items:center;gap:9px;}
+.td-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;flex-shrink:0;}
+.td-nm{font-weight:600;font-size:0.85rem;}
+.td-em{font-size:0.73rem;color:var(--muted);}
+.role-badge{padding:3px 10px;border-radius:50px;font-size:0.72rem;font-weight:700;}
+.role-student{background:rgba(74,144,226,0.15);color:var(--blue-light);}
+.role-teacher{background:rgba(155,89,182,0.15);color:#c084fc;}
+.role-admin{background:rgba(255,107,107,0.15);color:var(--red);}
+.status-on{display:inline-flex;align-items:center;gap:5px;font-size:0.77rem;color:var(--green);}
+.status-off{display:inline-flex;align-items:center;gap:5px;font-size:0.77rem;color:var(--muted);}
+.status-on::before,.status-off::before{content:'';width:6px;height:6px;border-radius:50%;}
+.status-on::before{background:var(--green);}
+.status-off::before{background:var(--muted);}
+.td-acts{display:flex;gap:6px;}
+.pag{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border);margin-top:4px;}
+.pag-info{font-size:0.8rem;color:var(--muted);}
+.pag-btns{display:flex;gap:5px;}
+.pg-btn{padding:6px 13px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:0.8rem;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.pg-btn:hover,.pg-btn.cur{border-color:var(--blue);color:var(--white);background:rgba(74,144,226,0.12);}
+
+/* ===== GRID HELPERS ===== */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.g3{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;}
+
+/* ===== MODAL ===== */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;}
+.mo.open{opacity:1;pointer-events:all;}
+.mo-box{background:var(--navy-2);border:1px solid var(--border);border-radius:20px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;transform:scale(.95) translateY(16px);transition:transform .3s;}
+.mo.open .mo-box{transform:scale(1) translateY(0);}
+.mo-hd{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--navy-2);z-index:1;}
+.mo-hd h3{font-size:1rem;font-weight:800;}
+.mo-close{background:rgba(255,255,255,0.05);border:none;color:var(--muted);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:0.88rem;transition:all .2s;}
+.mo-close:hover{background:rgba(255,107,107,0.15);color:var(--red);}
+.mo-bd{padding:20px 24px 24px;}
+
+/* ===== FORM ===== */
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:0.81rem;font-weight:600;margin-bottom:6px;}
+.fi,.fsel2,.fta{width:100%;padding:10px 13px;background:rgba(255,255,255,0.04);border:1.5px solid var(--border);border-radius:10px;color:var(--white);font-size:0.87rem;font-family:'Sora',sans-serif;outline:none;transition:all .25s;}
+.fi::placeholder,.fta::placeholder{color:var(--muted);}
+.fi:focus,.fsel2:focus,.fta:focus{border-color:var(--blue);background:rgba(74,144,226,0.07);box-shadow:0 0 0 3px rgba(74,144,226,0.12);}
+.fsel2{cursor:pointer;}
+.fsel2 option{background:var(--navy-2);}
+.fta{resize:vertical;min-height:80px;line-height:1.6;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mo-ftr{display:flex;gap:9px;justify-content:flex-end;margin-top:6px;}
+.btn-save{padding:10px 22px;background:linear-gradient(135deg,var(--blue),var(--accent));border:none;border-radius:10px;color:white;font-size:0.87rem;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;transition:all .3s;}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(74,144,226,0.4);}
+.btn-cancel{padding:10px 20px;background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--muted);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.btn-cancel:hover{border-color:var(--red);color:var(--red);}
+
+/* ===== COURSES SECTION ===== */
+.course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.crs-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .3s;}
+.crs-card:hover{transform:translateY(-4px);border-color:var(--blue);box-shadow:0 12px 36px rgba(74,144,226,0.16);}
+.crs-bar{height:5px;}
+.crs-body{padding:19px;}
+.crs-head{display:flex;align-items:center;gap:11px;margin-bottom:13px;}
+.crs-ico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.crs-info h3{font-size:0.95rem;font-weight:700;margin-bottom:3px;}
+.crs-info p{font-size:0.76rem;color:var(--muted);}
+.crs-stats{display:flex;gap:14px;margin-bottom:13px;}
+.crs-st{font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.crs-st i{color:var(--blue);font-size:0.72rem;}
+.crs-acts{display:flex;gap:7px;}
+
+/* ===== QUIZ SECTION ===== */
+.quiz-topic-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.qtab{padding:8px 16px;border-radius:9px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--muted);font-size:0.83rem;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all .2s;}
+.qtab:hover{border-color:var(--blue);color:var(--white);}
+.qtab.active{background:linear-gradient(135deg,rgba(74,144,226,0.2),rgba(0,200,255,0.07));border-color:rgba(74,144,226,0.35);color:var(--white);}
+.q-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:13px;padding:16px;margin-bottom:10px;transition:all .2s;}
+.q-card:hover{border-color:var(--blue);}
+.q-card:last-child{margin-bottom:0;}
+.q-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.q-num{font-size:0.71rem;color:var(--muted);background:rgba(255,255,255,0.06);padding:3px 9px;border-radius:50px;flex-shrink:0;}
+.q-text{font-size:0.88rem;font-weight:600;flex:1;line-height:1.5;}
+.q-acts{display:flex;gap:6px;flex-shrink:0;}
+.q-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;}
+.q-opt{padding:7px 11px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;font-size:0.79rem;font-family:'Fira Code',monospace;}
+.q-opt.correct{border-color:rgba(0,229,160,0.3);background:rgba(0,229,160,0.07);color:var(--green);}
+
+/* ===== GAMES SECTION ===== */
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+.gm-card{background:var(--card);border:1px solid var(--border);border-radius:17px;overflow:hidden;transition:all .3s;}
+.gm-card:hover{transform:translateY(-4px);box-shadow:0 14px 40px rgba(0,0,0,0.3);}
+.gm-banner{height:90px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;}
+.gm-body{padding:18px;}
+.gm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.gm-head h3{font-size:1rem;font-weight:700;}
+.toggle-wrap{display:flex;align-items:center;gap:9px;}
+.toggle-lbl{font-size:0.78rem;color:var(--muted);}
+.toggle{width:42px;height:23px;background:var(--navy-3);border-radius:50px;cursor:pointer;position:relative;transition:background .3s;border:none;flex-shrink:0;}
+.toggle.on{background:var(--green);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:17px;height:17px;background:white;border-radius:50%;transition:left .3s;}
+.toggle.on::after{left:22px;}
+.gm-desc{font-size:0.83rem;color:var(--muted);line-height:1.6;margin-bottom:13px;}
+.gm-stats{display:flex;gap:16px;}
+.gm-st{font-size:0.77rem;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.gm-st i{color:var(--blue);font-size:0.72rem;}
+.gm-enabled{color:var(--green);font-size:0.77rem;font-weight:600;}
+.gm-disabled{color:var(--red);font-size:0.77rem;font-weight:600;}
+
+/* ===== ANALYTICS ===== */
+.ana-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px;text-align:center;}
+.kpi-ico{font-size:1.5rem;margin-bottom:8px;}
+.kpi-num{font-size:1.9rem;font-weight:800;line-height:1;margin-bottom:4px;background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.kpi-lbl{font-size:0.77rem;color:var(--muted);}
+.top-crs-list{display:flex;flex-direction:column;gap:9px;}
+.tcrs-row{display:flex;align-items:center;gap:12px;}
+.tcrs-rank{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:800;flex-shrink:0;}
+.tr1{background:rgba(255,184,0,0.2);color:var(--yellow);}
+.tr2{background:rgba(192,192,192,0.15);color:#C0C0C0;}
+.tr3{background:rgba(205,127,50,0.15);color:#CD7F32;}
+.trn{background:rgba(255,255,255,0.06);color:var(--muted);}
+.tcrs-info{flex:1;min-width:0;}
+.tcrs-info h5{font-size:0.85rem;font-weight:600;margin-bottom:2px;}
+.tcrs-bar{height:4px;background:var(--navy-3);border-radius:50px;overflow:hidden;}
+.tcrs-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:50px;}
+.tcrs-num{font-size:0.8rem;font-weight:700;color:var(--blue-light);min-width:38px;text-align:right;}
+
+/* ===== NOTICES ===== */
+.notice-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:15px;}
+.nc{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .3s;}
+.nc:hover{border-color:var(--blue);transform:translateY(-3px);}
+.nc-bar{height:4px;}
+.nc-body{padding:18px;}
+.nc-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.nc-badge{padding:3px 10px;border-radius:50px;font-size:0.71rem;font-weight:700;white-space:nowrap;}
+.nb-a{background:rgba(74,144,226,0.15);color:var(--blue-light);}
+.nb-i{background:rgba(255,107,107,0.15);color:var(--red);}
+.nb-r{background:rgba(255,184,0,0.15);color:var(--yellow);}
+.nb-g{background:rgba(0,229,160,0.15);color:var(--green);}
+.nc-acts{display:flex;gap:5px;flex-shrink:0;}
+.nc-btn{width:27px;height:27px;border-radius:7px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.72rem;transition:all .2s;}
+.nce{background:rgba(74,144,226,0.1);color:var(--blue-light);}
+.nce:hover{background:var(--blue);color:white;}
+.ncd{background:rgba(255,107,107,0.08);color:var(--red);}
+.ncd:hover{background:var(--red);color:white;}
+.nc-title{font-size:0.94rem;font-weight:700;margin-bottom:7px;line-height:1.4;}
+.nc-txt{font-size:0.82rem;color:var(--muted);line-height:1.65;margin-bottom:12px;}
+.nc-ft{display:flex;align-items:center;justify-content:space-between;}
+.nc-date{font-size:0.73rem;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.nc-scope{font-size:0.71rem;padding:3px 9px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:50px;color:var(--muted);}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy-2);border:1px solid var(--green);color:var(--green);padding:13px 19px;border-radius:12px;font-size:0.87rem;font-weight:600;display:flex;align-items:center;gap:8px;transform:translateY(100px);opacity:0;transition:all .4s;z-index:9999;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.err{border-color:var(--red);color:var(--red);}
+
+/* ===== OVERLAY ===== */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:250;}
+.overlay.show{display:block;}
+
+/* ===== CONFIRM ===== */
+.confirm-box{background:var(--navy-2);border:1px solid rgba(255,107,107,0.3);border-radius:16px;padding:28px;text-align:center;max-width:360px;width:100%;}
+.confirm-box h3{font-size:1rem;font-weight:800;margin-bottom:9px;}
+.confirm-box p{font-size:0.86rem;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+.confirm-btns{display:flex;gap:9px;justify-content:center;}
+.btn-conf-del{padding:10px 24px;background:linear-gradient(135deg,var(--red),var(--orange));border:none;border-radius:10px;color:white;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;transition:all .3s;}
+.btn-conf-del:hover{box-shadow:0 6px 18px rgba(255,107,107,0.4);}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1200px){.stat-row{grid-template-columns:repeat(3,1fr);}.ana-kpi{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:1000px){.g2,.g3{grid-template-columns:1fr;}.course-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){.sb{transform:translateX(-100%);}.sb.open{transform:translateX(0);}.mn{margin-left:0;}.menu-btn{display:flex!important;}.pc{padding:16px 13px;}.topbar{padding:12px 14px;}.stat-row{grid-template-columns:1fr 1fr;}.fr{grid-template-columns:1fr;}.games-grid{grid-template-columns:1fr;}.course-grid{grid-template-columns:1fr;}.notice-grid{grid-template-columns:1fr;}.q-opts{grid-template-columns:1fr;}}
+@media(max-width:480px){.stat-row{grid-template-columns:1fr;}.ana-kpi{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="ov" onclick="closeSB()"></div>
+
+<!-- ===================================================
+     SIDEBAR
+=================================================== -->
+<aside class="sb" id="sb">
+  <a href="index.html" class="sb-logo">
+    <div class="sb-logo-ico">🛡️</div>
+    <span class="sb-logo-txt">Py<span>Quest</span></span>
+  </a>
+  <div class="sb-badge"><i class="fas fa-crown"></i> Admin Control Panel</div>
+  <nav class="sb-nav">
+    <div class="sb-lbl">Overview</div>
+    <button class="sb-btn active" onclick="go('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</button>
+    <div class="sb-lbl">Management</div>
+    <button class="sb-btn" onclick="go('users',this)"><i class="fas fa-users"></i> Manage Users <span class="sb-pill pill-red" id="userCount">12</span></button>
+    <button class="sb-btn" onclick="go('courses',this)"><i class="fas fa-book-open"></i> Manage Courses</button>
+    <button class="sb-btn" onclick="go('quizzes',this)"><i class="fas fa-brain"></i> Manage Quizzes</button>
+    <button class="sb-btn" onclick="go('games',this)"><i class="fas fa-gamepad"></i> Manage Games</button>
+    <div class="sb-lbl">Insights</div>
+    <button class="sb-btn" onclick="go('analytics',this)"><i class="fas fa-chart-line"></i> Analytics</button>
+    <button class="sb-btn" onclick="go('notices',this)"><i class="fas fa-bullhorn"></i> Notices <span class="sb-pill pill-green" id="noticeCount">4</span></button>
+    <div class="sb-lbl">System</div>
+    <button class="sb-btn" onclick="go('dashboard',this)"><i class="fas fa-shield-alt"></i> Security</button>
+    <button class="sb-btn" onclick="go('dashboard',this)"><i class="fas fa-cog"></i> Settings</button>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-user">
+      <div class="sb-av" id="sbAv">A</div>
+      <div class="sb-ui">
+        <div class="sb-un" id="sbName">Admin</div>
+        <div class="sb-ur">Super Administrator</div>
+      </div>
+      <i class="fas fa-sign-out-alt sb-out" onclick="logout()" title="Logout"></i>
+    </div>
+  </div>
+</aside>
+
+<!-- ===================================================
+     MAIN
+=================================================== -->
+<div class="mn">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-l">
+      <button class="menu-btn" id="mbtn" onclick="toggleSB()" style="display:none"><i class="fas fa-bars"></i></button>
+      <div class="bc">PyQuest Admin / <span id="bcTxt">Dashboard</span></div>
+    </div>
+    <div class="tb-r">
+      <div class="tb-tag tag-admin"><i class="fas fa-crown"></i> Admin</div>
+      <div class="tb-ico-btn" onclick="go('notices',document.querySelectorAll('.sb-btn')[7])"><i class="fas fa-bell"></i><span class="nb-dot"></span></div>
+      <a href="student-dashboard.html" style="text-decoration:none"><div class="tb-ico-btn" title="Student View"><i class="fas fa-external-link-alt"></i></div></a>
+      <a href="teacher.html" style="text-decoration:none"><div class="tb-ico-btn" title="Teacher View"><i class="fas fa-chalkboard-teacher"></i></div></a>
+    </div>
+  </div>
+
+  <div class="pc">
+
+    <!-- ========================================
+         DASHBOARD
+    ======================================== -->
+    <div class="sec active" id="sec-dashboard">
+      <div class="sec-hdr">
+        <h2>Admin Dashboard 🛡️</h2>
+        <p id="dashSub">Full platform overview — manage everything from one place.</p>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="stat-row">
+        <div class="sc" style="animation:fadeUp .4s .05s both">
+          <div class="sc-top"><div class="sc-ico" style="background:rgba(74,144,226,0.18)">👥</div><span class="sc-chg chg-up">+8 this week</span></div>
+          <div class="sc-num" id="kpiUsers">124</div><div class="sc-lbl">Total Users</div>
+        </div>
+        <div class="sc" style="animation:fadeUp .4s .1s both">
+          <div class="sc-top"><div class="sc-ico" style="background:rgba(0,229,160,0.18)">🎓</div><span class="sc-chg chg-up">+6</span></div>
+          <div class="sc-num" id="kpiStudents">98</div><div class="sc-lbl">Students</div>
+        </div>
+        <div class="sc" style="animation:fadeUp .4s .15s both">
+          <div class="sc-top"><div class="sc-ico" style="background:rgba(155,89,182,0.18)">👨‍🏫</div><span class="sc-chg chg-up">+2</span></div>
+          <div class="sc-num" id="kpiTeachers">18</div><div class="sc-lbl">Teachers</div>
+        </div>
+        <div class="sc" style="animation:fadeUp .4s .2s both">
+          <div class="sc-top"><div class="sc-ico" style="background:rgba(255,184,0,0.18)">📚</div><span class="sc-chg chg-warn">Stable</span></div>
+          <div class="sc-num">6</div><div class="sc-lbl">Courses</div>
+        </div>
+        <div class="sc" style="animation:fadeUp .4s .25s both">
+          <div class="sc-top"><div class="sc-ico" style="background:rgba(255,107,107,0.18)">🎮</div><span class="sc-chg chg-up">+142</span></div>
+          <div class="sc-num">2,841</div><div class="sc-lbl">Games Played</div>
+        </div>
+      </div>
+
+      <!-- Charts row 1 -->
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-chart-line"></i> Platform Traffic (Last 7 Days)</div></div>
+          <canvas id="trafficChart" style="max-height:210px"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-chart-pie"></i> User Role Distribution</div></div>
+          <canvas id="roleChart" style="max-height:210px"></canvas>
+        </div>
+      </div>
+
+      <!-- Charts row 2 -->
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-user-plus"></i> New Registrations (Weekly)</div></div>
+          <canvas id="regChart" style="max-height:190px"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-fire"></i> Recent Activity</div></div>
+          <div style="display:flex;flex-direction:column;gap:9px" id="dashActivity"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================
+         MANAGE USERS
+    ======================================== -->
+    <div class="sec" id="sec-users">
+      <div class="sec-hdr"><h2>Manage Users</h2><p>Add, edit, delete users and manage their roles across the platform.</p></div>
+      <div class="card">
+        <div class="tbar">
+          <div class="srch"><i class="fas fa-search"></i><input type="text" id="userSrch" placeholder="Search by name or email..." oninput="filterUsers()"></div>
+          <select class="fsel" id="roleFilter" onchange="filterUsers()">
+            <option value="">All Roles</option>
+            <option>student</option><option>teacher</option><option>admin</option>
+          </select>
+          <select class="fsel" id="statusFil" onchange="filterUsers()">
+            <option value="">All Status</option>
+            <option>Active</option><option>Inactive</option>
+          </select>
+          <button class="btn-add" onclick="openUserModal()"><i class="fas fa-plus"></i> Add User</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Role</th><th>Joined</th><th>Topics</th><th>Quiz Score</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="userTbody"></tbody>
+          </table>
+        </div>
+        <div class="pag"><div class="pag-info" id="uPagInfo">Showing all users</div><div class="pag-btns"><button class="pg-btn cur">1</button><button class="pg-btn">2</button><button class="pg-btn">→</button></div></div>
+      </div>
+    </div>
+
+    <!-- ========================================
+         MANAGE COURSES
+    ======================================== -->
+    <div class="sec" id="sec-courses">
+      <div class="sec-hdr"><h2>Manage Courses</h2><p>Add, edit, or remove tutorials and topic content for all languages.</p></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <button class="btn-add" onclick="openCourseModal()"><i class="fas fa-plus"></i> Add Course</button>
+      </div>
+      <div class="course-grid" id="courseGrid"></div>
+    </div>
+
+    <!-- ========================================
+         MANAGE QUIZZES
+    ======================================== -->
+    <div class="sec" id="sec-quizzes">
+      <div class="sec-hdr"><h2>Manage Quizzes</h2><p>Add, edit, or remove quiz questions by topic.</p></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div class="quiz-topic-tabs" id="qTabs"></div>
+        <button class="btn-add" onclick="openQuizModal()"><i class="fas fa-plus"></i> Add Question</button>
+      </div>
+      <div id="qList"></div>
+    </div>
+
+    <!-- ========================================
+         MANAGE GAMES
+    ======================================== -->
+    <div class="sec" id="sec-games">
+      <div class="sec-hdr"><h2>Manage Games</h2><p>Enable or disable games available to students on the platform.</p></div>
+      <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+    <!-- ========================================
+         ANALYTICS
+    ======================================== -->
+    <div class="sec" id="sec-analytics">
+      <div class="sec-hdr"><h2>Platform Analytics</h2><p>Deep insights into traffic, registrations, and course engagement.</p></div>
+      <div class="ana-kpi">
+        <div class="kpi"><div class="kpi-ico">📊</div><div class="kpi-num">8,241</div><div class="kpi-lbl">Page Views (This Month)</div></div>
+        <div class="kpi"><div class="kpi-ico">👥</div><div class="kpi-num">124</div><div class="kpi-lbl">Registered Users</div></div>
+        <div class="kpi"><div class="kpi-ico">⏱️</div><div class="kpi-num">18m</div><div class="kpi-lbl">Avg Session Time</div></div>
+        <div class="kpi"><div class="kpi-ico">📈</div><div class="kpi-num">68%</div><div class="kpi-lbl">Course Completion</div></div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-chart-area"></i> Monthly Traffic Trend</div></div>
+          <canvas id="monthlyChart" style="max-height:220px"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-trophy"></i> Top Courses by Enrollment</div></div>
+          <div class="top-crs-list" id="topCrsList"></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-gamepad"></i> Games Played Distribution</div></div>
+          <canvas id="gameChart" style="max-height:220px"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-ttl"><i class="fas fa-star"></i> Quiz Performance by Topic</div></div>
+          <canvas id="anaQuizChart" style="max-height:220px"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================
+         NOTICES
+    ======================================== -->
+    <div class="sec" id="sec-notices">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap">
+        <div><h2 style="font-size:1.5rem;font-weight:800;margin-bottom:4px">Notice Board</h2><p style="color:var(--muted);font-size:0.87rem">Platform-wide and class-specific announcements.</p></div>
+        <button class="btn-add red" onclick="openNoticeModal()"><i class="fas fa-plus"></i> Create Notice</button>
+      </div>
+      <div class="notice-grid" id="noticeGrid"></div>
+    </div>
+
+  </div><!-- end pc -->
+</div><!-- end mn -->
+
+<!-- ===================================================
+     MODALS
+=================================================== -->
+
+<!-- User Modal -->
+<div class="mo" id="userModal" onclick="closeModalClick(event,'userModal')">
+  <div class="mo-box">
+    <div class="mo-hd"><h3 id="umTitle">Add User</h3><button class="mo-close" onclick="closeMo('userModal')"><i class="fas fa-times"></i></button></div>
+    <div class="mo-bd">
+      <div class="fr"><div class="fg"><label>First Name *</label><input type="text" class="fi" id="uFN" placeholder="First name"></div><div class="fg"><label>Last Name *</label><input type="text" class="fi" id="uLN" placeholder="Last name"></div></div>
+      <div class="fg"><label>Email Address *</label><input type="email" class="fi" id="uEmail" placeholder="user@email.com"></div>
+      <div class="fr">
+        <div class="fg"><label>Role</label><select class="fsel2" id="uRole"><option value="student">🎓 Student</option><option value="teacher">👨‍🏫 Teacher</option><option value="admin">🛡️ Admin</option></select></div>
+        <div class="fg"><label>Status</label><select class="fsel2" id="uStatus"><option>Active</option><option>Inactive</option></select></div>
+      </div>
+      <div class="fg"><label>Password <span style="color:var(--muted);font-size:0.77rem">(leave blank to keep)</span></label><input type="password" class="fi" id="uPass" placeholder="••••••••"></div>
+      <input type="hidden" id="uEditId">
+      <div class="mo-ftr"><button class="btn-cancel" onclick="closeMo('userModal')">Cancel</button><button class="btn-save" onclick="saveUser()"><i class="fas fa-save"></i> Save User</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Course Modal -->
+<div class="mo" id="courseModal" onclick="closeModalClick(event,'courseModal')">
+  <div class="mo-box">
+    <div class="mo-hd"><h3 id="cmTitle">Add Course</h3><button class="mo-close" onclick="closeMo('courseModal')"><i class="fas fa-times"></i></button></div>
+    <div class="mo-bd">
+      <div class="fr">
+        <div class="fg"><label>Course Title *</label><input type="text" class="fi" id="cTitle" placeholder="e.g. Python Fundamentals"></div>
+        <div class="fg"><label>Language</label><select class="fsel2" id="cLang"><option>Python</option><option>JavaScript</option><option>HTML</option><option>CSS</option><option>C</option><option>C++</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>Level</label><select class="fsel2" id="cLevel"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+        <div class="fg"><label>Total Topics</label><input type="number" class="fi" id="cTopics" placeholder="e.g. 19" min="1"></div>
+      </div>
+      <div class="fg"><label>Description</label><textarea class="fta" id="cDesc" placeholder="Brief description of this course..."></textarea></div>
+      <div class="fg"><label>Status</label><select class="fsel2" id="cStatus"><option>Active</option><option>Draft</option><option>Archived</option></select></div>
+      <input type="hidden" id="cEditId">
+      <div class="mo-ftr"><button class="btn-cancel" onclick="closeMo('courseModal')">Cancel</button><button class="btn-save" onclick="saveCourse()"><i class="fas fa-save"></i> Save Course</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz Modal -->
+<div class="mo" id="quizModal" onclick="closeModalClick(event,'quizModal')">
+  <div class="mo-box">
+    <div class="mo-hd"><h3 id="qmTitle">Add Question</h3><button class="mo-close" onclick="closeMo('quizModal')"><i class="fas fa-times"></i></button></div>
+    <div class="mo-bd">
+      <div class="fg"><label>Topic</label><select class="fsel2" id="qmTopic"><option>Variables</option><option>Conditions</option><option>Loops</option><option>Functions</option><option>Lists</option><option>Operators</option></select></div>
+      <div class="fg"><label>Question *</label><textarea class="fta" id="qmQ" placeholder="Type the question here..."></textarea></div>
+      <div class="fg"><label>Code Snippet <span style="color:var(--muted);font-size:0.77rem">(optional)</span></label><textarea class="fta" id="qmCode" placeholder="x = 5&#10;print(x + 1)" style="font-family:'Fira Code',monospace;font-size:0.83rem"></textarea></div>
+      <div class="fg"><label>Answer Options (mark correct one ✓)</label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px;align-items:center"><input type="radio" name="qans" value="0" style="accent-color:var(--green)"><input type="text" class="fi" id="qOpt0" placeholder="Option A"></div>
+          <div style="display:flex;gap:8px;align-items:center"><input type="radio" name="qans" value="1" style="accent-color:var(--green)"><input type="text" class="fi" id="qOpt1" placeholder="Option B"></div>
+          <div style="display:flex;gap:8px;align-items:center"><input type="radio" name="qans" value="2" style="accent-color:var(--green)"><input type="text" class="fi" id="qOpt2" placeholder="Option C"></div>
+          <div style="display:flex;gap:8px;align-items:center"><input type="radio" name="qans" value="3" style="accent-color:var(--green)"><input type="text" class="fi" id="qOpt3" placeholder="Option D"></div>
+        </div>
+      </div>
+      <div class="fg"><label>Explanation <span style="color:var(--muted);font-size:0.77rem">(shown after wrong answer)</span></label><textarea class="fta" id="qmExp" placeholder="Explain why the correct answer is right..."></textarea></div>
+      <input type="hidden" id="qmEditId">
+      <div class="mo-ftr"><button class="btn-cancel" onclick="closeMo('quizModal')">Cancel</button><button class="btn-save" onclick="saveQuestion()"><i class="fas fa-save"></i> Save Question</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Notice Modal -->
+<div class="mo" id="noticeModal" onclick="closeModalClick(event,'noticeModal')">
+  <div class="mo-box">
+    <div class="mo-hd"><h3 id="nmTitle">Create Notice</h3><button class="mo-close" onclick="closeMo('noticeModal')"><i class="fas fa-times"></i></button></div>
+    <div class="mo-bd">
+      <div class="fg"><label>Title *</label><input type="text" class="fi" id="nmTitle2" placeholder="Notice title..."></div>
+      <div class="fr">
+        <div class="fg"><label>Category</label><select class="fsel2" id="nmCat"><option>Announcement</option><option>Important</option><option>Reminder</option><option>General</option></select></div>
+        <div class="fg"><label>Target</label><select class="fsel2" id="nmTarget"><option>All Users</option><option>Students Only</option><option>Teachers Only</option><option>Admins Only</option></select></div>
+      </div>
+      <div class="fg"><label>Content *</label><textarea class="fta" id="nmContent" placeholder="Write notice content..." style="min-height:100px"></textarea></div>
+      <input type="hidden" id="nmEditId">
+      <div class="mo-ftr"><button class="btn-cancel" onclick="closeMo('noticeModal')">Cancel</button><button class="btn-save" onclick="saveNotice()"><i class="fas fa-save"></i> Post Notice</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="mo" id="confirmModal">
+  <div class="confirm-box">
+    <h3>⚠️ Confirm Delete</h3>
+    <p id="confirmMsg">Are you sure you want to delete this item? This action cannot be undone.</p>
+    <div class="confirm-btns">
+      <button class="btn-cancel" onclick="closeMo('confirmModal')">Cancel</button>
+      <button class="btn-conf-del" id="confirmOkBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+<!-- ===================================================
+     JAVASCRIPT
+=================================================== -->
+<script>
+/* ==================== CSS KEYFRAME ==================== */
+const styleEl = document.createElement('style');
+styleEl.textContent = `@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}`;
+document.head.appendChild(styleEl);
+
+/* ==================== DATA ==================== */
+const DEFAULT_USERS = [
+  {id:1,fn:'Riya',ln:'Sharma',email:'riya@email.com',role:'student',status:'Active',joined:'2025-01-05',topics:14,quiz:90,color:'linear-gradient(135deg,#4A90E2,#00C8FF)'},
+  {id:2,fn:'Ahmed',ln:'Hassan',email:'ahmed@email.com',role:'student',status:'Active',joined:'2025-01-08',topics:9,quiz:68,color:'linear-gradient(135deg,#00E5A0,#4A90E2)'},
+  {id:3,fn:'Sofia',ln:'Rahman',email:'sofia@email.com',role:'student',status:'Active',joined:'2025-01-10',topics:7,quiz:72,color:'linear-gradient(135deg,#FFB800,#FF6B6B)'},
+  {id:4,fn:'Karim',ln:'Ali',email:'karim@email.com',role:'teacher',status:'Active',joined:'2024-12-15',topics:19,quiz:95,color:'linear-gradient(135deg,#9B59B6,#4A90E2)'},
+  {id:5,fn:'Priya',ln:'Singh',email:'priya@email.com',role:'student',status:'Active',joined:'2025-01-12',topics:11,quiz:78,color:'linear-gradient(135deg,#FF6B6B,#FFB800)'},
+  {id:6,fn:'Omar',ln:'Farhan',email:'omar@email.com',role:'student',status:'Inactive',joined:'2025-01-03',topics:5,quiz:54,color:'linear-gradient(135deg,#00C8FF,#9B59B6)'},
+  {id:7,fn:'Nadia',ln:'Islam',email:'nadia@email.com',role:'teacher',status:'Active',joined:'2024-12-20',topics:10,quiz:83,color:'linear-gradient(135deg,#00E5A0,#FFB800)'},
+  {id:8,fn:'Tariq',ln:'Hossain',email:'tariq@email.com',role:'student',status:'Active',joined:'2025-01-14',topics:16,quiz:88,color:'linear-gradient(135deg,#4A90E2,#FF6B6B)'},
+  {id:9,fn:'Layla',ln:'Malik',email:'layla@email.com',role:'student',status:'Active',joined:'2025-01-06',topics:8,quiz:65,color:'linear-gradient(135deg,#FFB800,#9B59B6)'},
+  {id:10,fn:'Bilal',ln:'Rana',email:'bilal@email.com',role:'admin',status:'Active',joined:'2024-11-01',topics:19,quiz:97,color:'linear-gradient(135deg,#9B59B6,#00C8FF)'},
+  {id:11,fn:'Malia',ln:'Chen',email:'malia@email.com',role:'student',status:'Active',joined:'2025-01-18',topics:6,quiz:60,color:'linear-gradient(135deg,#FF6B6B,#4A90E2)'},
+  {id:12,fn:'Zaid',ln:'Chowdhury',email:'zaid@email.com',role:'student',status:'Inactive',joined:'2025-01-02',topics:12,quiz:76,color:'linear-gradient(135deg,#00C8FF,#00E5A0)'},
+];
+const DEFAULT_COURSES = [
+  {id:1,title:'Python Fundamentals',lang:'Python',level:'Beginner',topics:19,enrolled:38,status:'Active',desc:'Learn Python from scratch with hands-on exercises.',color:'linear-gradient(90deg,#4A90E2,#00C8FF)',ico:'🐍',bg:'rgba(74,144,226,0.18)'},
+  {id:2,title:'Advanced Python',lang:'Python',level:'Intermediate',topics:15,enrolled:24,status:'Active',desc:'OOP, file handling, modules and advanced Python patterns.',color:'linear-gradient(90deg,#00E5A0,#4A90E2)',ico:'⚙️',bg:'rgba(0,229,160,0.15)'},
+  {id:3,title:'JavaScript Basics',lang:'JavaScript',level:'Beginner',topics:14,enrolled:31,status:'Active',desc:'DOM, events, and ES6 features made simple.',color:'linear-gradient(90deg,#FFB800,#FF9500)',ico:'⚡',bg:'rgba(255,184,0,0.15)'},
+  {id:4,title:'HTML / CSS',lang:'HTML',level:'Beginner',topics:25,enrolled:31,status:'Active',desc:'Build beautiful web pages from the ground up.',color:'linear-gradient(90deg,#FF6B6B,#FFB800)',ico:'🌐',bg:'rgba(255,107,107,0.15)'},
+  {id:5,title:'C Programming',lang:'C',level:'Intermediate',topics:11,enrolled:14,status:'Active',desc:'Master the foundations of systems programming.',color:'linear-gradient(90deg,#9B59B6,#4A90E2)',ico:'⚙️',bg:'rgba(155,89,182,0.15)'},
+  {id:6,title:'C++ Essentials',lang:'C++',level:'Intermediate',topics:12,enrolled:10,status:'Draft',desc:'Object-oriented programming with C++ STL.',color:'linear-gradient(90deg,#00C8FF,#9B59B6)',ico:'🔧',bg:'rgba(0,200,255,0.15)'},
+];
+const DEFAULT_QUESTIONS = {
+  Variables:[
+    {id:1,q:'What is the output of: x = 10; y = 3; print(x + y)',code:'x = 10\ny = 3\nprint(x + y)',opts:['7','13','103','30'],ans:1,exp:'x=10 and y=3, so x+y=13.'},
+    {id:2,q:'Which variable name is valid in Python?',code:'',opts:['1name','my name','my_name','my-name'],ans:2,exp:'Variable names cannot start with digits or contain spaces/hyphens.'},
+  ],
+  Loops:[
+    {id:3,q:'What does range(3) produce?',code:'for i in range(3):\n    print(i)',opts:['1 2 3','0 1 2','0 1 2 3','1 2'],ans:1,exp:'range(3) generates 0,1,2 — Python ranges start at 0.'},
+    {id:4,q:'What keyword immediately exits a loop?',code:'',opts:['stop','exit','break','return'],ans:2,exp:'break immediately terminates the loop execution.'},
+  ],
+  Functions:[
+    {id:5,q:'What keyword defines a function in Python?',code:'',opts:['function','func','def','define'],ans:2,exp:'def is Python\'s keyword for defining functions.'},
+  ],
+  Conditions:[
+    {id:6,q:'What is the output of this if statement?',code:'x = 10\nif x > 5:\n    print("Yes")\nelse:\n    print("No")',opts:['No','Yes','Error','None'],ans:1,exp:'10 > 5 is True so the if-block runs and prints "Yes".'},
+  ],
+  Lists:[
+    {id:7,q:'How do you add to the end of a list?',code:'',opts:['list.add()','list.push()','list.append()','list.insert(0)'],ans:2,exp:'append() adds an item to the end of a Python list.'},
+  ],
+  Operators:[
+    {id:8,q:'What does 10 % 3 return in Python?',code:'print(10 % 3)',opts:['3','1','3.33','0'],ans:1,exp:'% is modulo — returns the remainder. 10 ÷ 3 = 3 remainder 1.'},
+  ],
+};
+const DEFAULT_GAMES = [
+  {id:1,name:'Code Snake 🐍',desc:'Snake moves by answering Python logic questions. Correct answers grow the snake, wrong answers slow it down. Real gameplay with coding challenges.',banner:'linear-gradient(135deg,#162336,#1E2D42)',emoji:'🐍',enabled:true,plays:1284,rating:4.8},
+  {id:2,name:'Break the Code 🔧',desc:'Puzzle game where students fix broken code lines. Each level is progressively harder and tests debugging skills in a fun way.',banner:'linear-gradient(135deg,#1E2D42,#162336)',emoji:'🔧',enabled:true,plays:942,rating:4.6},
+  {id:3,name:'Murder Mystery Debug 🔍',desc:'Find the bug clues hidden in code snippets and solve the programming mystery. Students identify and fix the culprit bug.',banner:'linear-gradient(135deg,#162336,#243650)',emoji:'🔍',enabled:true,plays:615,rating:4.9},
+];
+const DEFAULT_NOTICES = [
+  {id:1,title:'Platform Maintenance — Saturday 2AM',category:'Important',target:'All Users',content:'The platform will undergo scheduled maintenance on Saturday at 2:00 AM. Expected downtime is 30 minutes. Please save your work beforehand.',date:'2025-01-20'},
+  {id:2,title:'New Game: Murder Mystery Debug is Live!',category:'Announcement',target:'Students Only',content:'We just launched a brand new coding game — Murder Mystery Debug! Find the bug, solve the mystery. Try it in the Games section now!',date:'2025-01-19'},
+  {id:3,title:'Weekly Quiz Reminder',category:'Reminder',target:'Students Only',content:'Don\'t forget to take this week\'s quiz before Sunday midnight. Quizzes help track your progress and identify weak areas for improvement.',date:'2025-01-18'},
+  {id:4,title:'New Instructor Joined the Team',category:'Announcement',target:'All Users',content:'We welcome a new instructor to our teaching team! They will be handling JavaScript Basics and Advanced Python courses starting next week.',date:'2025-01-17'},
+];
+
+/* ==================== STATE ==================== */
+let users    = JSON.parse(localStorage.getItem('pq_admin_users')   || JSON.stringify(DEFAULT_USERS));
+let courses  = JSON.parse(localStorage.getItem('pq_admin_courses') || JSON.stringify(DEFAULT_COURSES));
+let quizData = JSON.parse(localStorage.getItem('pq_admin_quiz')    || JSON.stringify(DEFAULT_QUESTIONS));
+let games    = JSON.parse(localStorage.getItem('pq_admin_games')   || JSON.stringify(DEFAULT_GAMES));
+let notices  = JSON.parse(localStorage.getItem('pq_admin_notices') || JSON.stringify(DEFAULT_NOTICES));
+let currentQuizTopic = 'Variables';
+let chartsDrawn = {};
+
+function save(){
+  localStorage.setItem('pq_admin_users',  JSON.stringify(users));
+  localStorage.setItem('pq_admin_courses',JSON.stringify(courses));
+  localStorage.setItem('pq_admin_quiz',   JSON.stringify(quizData));
+  localStorage.setItem('pq_admin_games',  JSON.stringify(games));
+  localStorage.setItem('pq_admin_notices',JSON.stringify(notices));
+}
+
+/* ==================== INIT ==================== */
+function init(){
+  const u = JSON.parse(localStorage.getItem('pyquest_current_user')||'{}');
+  const nm = u.firstName||'Admin';
+  document.getElementById('sbName').textContent = nm+' '+(u.lastName||'');
+  document.getElementById('sbAv').textContent   = nm[0].toUpperCase();
+  document.getElementById('dashSub').textContent = `Full platform overview — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}.`;
+  updateKPIs();
+  renderDashActivity();
+  renderUserTable(users);
+  renderCourses();
+  renderQuizTabs();
+  renderQuizList();
+  renderGames();
+  renderNotices();
+  setupMobile();
+  setTimeout(initDashCharts,120);
+}
+
+/* ==================== KPIs ==================== */
+function updateKPIs(){
+  const s = users.filter(u=>u.role==='student').length;
+  const t = users.filter(u=>u.role==='teacher').length;
+  document.getElementById('kpiUsers').textContent    = users.length;
+  document.getElementById('kpiStudents').textContent = s;
+  document.getElementById('kpiTeachers').textContent = t;
+  document.getElementById('userCount').textContent   = users.length;
+  document.getElementById('noticeCount').textContent = notices.length;
+}
+
+/* ==================== NAVIGATION ==================== */
+function go(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const names={dashboard:'Dashboard',users:'Manage Users',courses:'Manage Courses',quizzes:'Manage Quizzes',games:'Manage Games',analytics:'Analytics',notices:'Notices'};
+  document.getElementById('bcTxt').textContent = names[id]||id;
+  closeSB();
+  if(id==='analytics' && !chartsDrawn.analytics) {setTimeout(initAnalyticsCharts,100); chartsDrawn.analytics=true;}
+}
+
+/* ==================== SIDEBAR ==================== */
+function toggleSB(){document.getElementById('sb').classList.toggle('open');document.getElementById('ov').classList.toggle('show');}
+function closeSB(){document.getElementById('sb').classList.remove('open');document.getElementById('ov').classList.remove('show');}
+function setupMobile(){
+  const b=document.getElementById('mbtn');
+  function chk(){b.style.display=window.innerWidth<=768?'flex':'none';}
+  chk();window.addEventListener('resize',()=>{chk();if(window.innerWidth>768)closeSB();});
+}
+
+/* ==================== USERS ==================== */
+function renderUserTable(data){
+  const tb = document.getElementById('userTbody');
+  if(!data.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">No users found.</td></tr>`;return;}
+  tb.innerHTML = data.map(u=>`
+  <tr>
+    <td><div class="td-usr"><div class="td-av" style="background:${u.color}">${u.fn[0]}</div><div><div class="td-nm">${u.fn} ${u.ln}</div><div class="td-em">${u.email}</div></div></div></td>
+    <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+    <td style="font-size:0.8rem;color:var(--muted)">${u.joined}</td>
+    <td style="font-size:0.84rem;color:var(--blue-light)">${u.topics}</td>
+    <td><span style="font-size:0.84rem;font-weight:700;color:${u.quiz>=80?'var(--green)':u.quiz>=60?'var(--yellow)':'var(--red)'}">${u.quiz}%</span></td>
+    <td><span class="status-${u.status==='Active'?'on':'off'}">${u.status}</span></td>
+    <td><div class="td-acts">
+      <button class="btn-sm btn-edit" onclick="openUserModal(${u.id})"><i class="fas fa-edit"></i> Edit</button>
+      <button class="btn-sm btn-role" onclick="cycleRole(${u.id})"><i class="fas fa-user-tag"></i></button>
+      <button class="btn-sm btn-del" onclick="confirmDelete('user',${u.id})"><i class="fas fa-trash"></i></button>
+    </div></td>
+  </tr>`).join('');
+  document.getElementById('uPagInfo').textContent = `Showing ${data.length} of ${users.length} users`;
+}
+function filterUsers(){
+  const q = document.getElementById('userSrch').value.toLowerCase();
+  const r = document.getElementById('roleFilter').value;
+  const s = document.getElementById('statusFil').value;
+  renderUserTable(users.filter(u=>{
+    const mq=(u.fn+' '+u.ln+' '+u.email).toLowerCase().includes(q);
+    const mr=!r||u.role===r; const ms=!s||u.status===s;
+    return mq&&mr&&ms;
+  }));
+}
+function openUserModal(id=null){
+  const m=document.getElementById('userModal');
+  if(id){
+    const u=users.find(x=>x.id===id);
+    document.getElementById('umTitle').textContent='Edit User';
+    document.getElementById('uFN').value=u.fn; document.getElementById('uLN').value=u.ln;
+    document.getElementById('uEmail').value=u.email; document.getElementById('uRole').value=u.role;
+    document.getElementById('uStatus').value=u.status; document.getElementById('uPass').value='';
+    document.getElementById('uEditId').value=id;
+  } else {
+    document.getElementById('umTitle').textContent='Add User';
+    ['uFN','uLN','uEmail','uPass'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('uRole').value='student'; document.getElementById('uStatus').value='Active';
+    document.getElementById('uEditId').value='';
+  }
+  m.classList.add('open');
+}
+function saveUser(){
+  const fn=document.getElementById('uFN').value.trim(), ln=document.getElementById('uLN').value.trim();
+  const email=document.getElementById('uEmail').value.trim();
+  if(!fn||!ln||!email){showToast('Please fill required fields!',true);return;}
+  const role=document.getElementById('uRole').value, status=document.getElementById('uStatus').value;
+  const editId=document.getElementById('uEditId').value;
+  const colors=['linear-gradient(135deg,#4A90E2,#00C8FF)','linear-gradient(135deg,#00E5A0,#4A90E2)','linear-gradient(135deg,#FFB800,#FF6B6B)','linear-gradient(135deg,#9B59B6,#4A90E2)','linear-gradient(135deg,#FF6B6B,#FFB800)'];
+  if(editId){
+    const idx=users.findIndex(u=>u.id==editId);
+    if(idx>=0)users[idx]={...users[idx],fn,ln,email,role,status};
+    showToast('User updated!');
+  } else {
+    users.push({id:Date.now(),fn,ln,email,role,status,joined:new Date().toISOString().split('T')[0],topics:0,quiz:0,color:colors[users.length%colors.length]});
+    showToast('User added!');
+  }
+  save(); updateKPIs(); renderUserTable(users); closeMo('userModal');
+}
+function cycleRole(id){
+  const u=users.find(x=>x.id===id); if(!u)return;
+  const roles=['student','teacher','admin'];
+  u.role=roles[(roles.indexOf(u.role)+1)%roles.length];
+  save(); renderUserTable(users); showToast(`Role changed to ${u.role}!`);
+}
+
+/* ==================== COURSES ==================== */
+function renderCourses(){
+  document.getElementById('courseGrid').innerHTML = courses.map(c=>`
+  <div class="crs-card">
+    <div class="crs-bar" style="background:${c.color}"></div>
+    <div class="crs-body">
+      <div class="crs-head">
+        <div class="crs-ico" style="background:${c.bg}">${c.ico}</div>
+        <div class="crs-info"><h3>${c.title}</h3><p>${c.lang} · ${c.level}</p></div>
+      </div>
+      <div class="crs-stats">
+        <span class="crs-st"><i class="fas fa-book"></i>${c.topics} Topics</span>
+        <span class="crs-st"><i class="fas fa-users"></i>${c.enrolled} Enrolled</span>
+        <span class="crs-st" style="color:${c.status==='Active'?'var(--green)':'var(--yellow)'}"><i class="fas fa-circle" style="font-size:.55rem"></i>${c.status}</span>
+      </div>
+      <p style="font-size:0.79rem;color:var(--muted);line-height:1.55;margin-bottom:13px">${c.desc}</p>
+      <div class="crs-acts">
+        <button class="btn-sm btn-edit" style="flex:1" onclick="openCourseModal(${c.id})"><i class="fas fa-edit"></i> Edit</button>
+        <button class="btn-sm btn-view" style="flex:1" onclick="showToast('Viewing '+c.title)"><i class="fas fa-eye"></i> View</button>
+        <button class="btn-sm btn-del" onclick="confirmDelete('course',${c.id})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  </div>`).join('');
+}
+function openCourseModal(id=null){
+  if(id){
+    const c=courses.find(x=>x.id===id);
+    document.getElementById('cmTitle').textContent='Edit Course';
+    document.getElementById('cTitle').value=c.title; document.getElementById('cLang').value=c.lang;
+    document.getElementById('cLevel').value=c.level; document.getElementById('cTopics').value=c.topics;
+    document.getElementById('cDesc').value=c.desc; document.getElementById('cStatus').value=c.status;
+    document.getElementById('cEditId').value=id;
+  } else {
+    document.getElementById('cmTitle').textContent='Add Course';
+    ['cTitle','cDesc','cTopics'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('cLang').value='Python'; document.getElementById('cLevel').value='Beginner';
+    document.getElementById('cStatus').value='Active'; document.getElementById('cEditId').value='';
+  }
+  document.getElementById('courseModal').classList.add('open');
+}
+function saveCourse(){
+  const title=document.getElementById('cTitle').value.trim();
+  if(!title){showToast('Please enter a course title!',true);return;}
+  const lang=document.getElementById('cLang').value, level=document.getElementById('cLevel').value;
+  const topics=parseInt(document.getElementById('cTopics').value)||0;
+  const desc=document.getElementById('cDesc').value.trim(), status=document.getElementById('cStatus').value;
+  const editId=document.getElementById('cEditId').value;
+  const colors={'Python':'linear-gradient(90deg,#4A90E2,#00C8FF)','JavaScript':'linear-gradient(90deg,#FFB800,#FF9500)','HTML':'linear-gradient(90deg,#FF6B6B,#FFB800)','CSS':'linear-gradient(90deg,#00E5A0,#4A90E2)','C':'linear-gradient(90deg,#9B59B6,#4A90E2)','C++':'linear-gradient(90deg,#00C8FF,#9B59B6)'};
+  const icos={'Python':'🐍','JavaScript':'⚡','HTML':'🌐','CSS':'🎨','C':'⚙️','C++':'🔧'};
+  if(editId){
+    const idx=courses.findIndex(c=>c.id==editId);
+    if(idx>=0)courses[idx]={...courses[idx],title,lang,level,topics,desc,status,color:colors[lang]||colors['Python'],ico:icos[lang]||'📚'};
+    showToast('Course updated!');
+  } else {
+    courses.push({id:Date.now(),title,lang,level,topics,desc,status,enrolled:0,color:colors[lang]||colors['Python'],ico:icos[lang]||'📚',bg:'rgba(74,144,226,0.15)'});
+    showToast('Course added!');
+  }
+  save(); renderCourses(); closeMo('courseModal');
+}
+
+/* ==================== QUIZZES ==================== */
+function renderQuizTabs(){
+  const tabs = Object.keys(quizData);
+  document.getElementById('qTabs').innerHTML = tabs.map(t=>`
+    <button class="qtab ${t===currentQuizTopic?'active':''}" onclick="setQuizTopic('${t}')">${t}</button>`).join('');
+}
+function setQuizTopic(t){currentQuizTopic=t; renderQuizTabs(); renderQuizList();}
+function renderQuizList(){
+  const qs = quizData[currentQuizTopic]||[];
+  const el = document.getElementById('qList');
+  if(!qs.length){el.innerHTML=`<div style="text-align:center;padding:30px;color:var(--muted)">No questions yet for ${currentQuizTopic}. Add one!</div>`;return;}
+  el.innerHTML = qs.map((q,i)=>`
+  <div class="q-card">
+    <div class="q-top">
+      <span class="q-num">#${i+1} · ${currentQuizTopic}</span>
+      <div class="q-acts">
+        <button class="btn-sm btn-edit" onclick="openQuizModal(${q.id})"><i class="fas fa-edit"></i></button>
+        <button class="btn-sm btn-del" onclick="confirmDelete('question',${q.id})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="q-text">${q.q}</div>
+    ${q.code?`<div style="background:#07111d;border:1px solid var(--border);border-radius:9px;padding:11px 14px;font-family:'Fira Code',monospace;font-size:0.8rem;line-height:1.8;margin:10px 0;color:#e8f4ff"><pre>${q.code}</pre></div>`:''}
+    <div class="q-opts">
+      ${q.opts.map((o,oi)=>`<div class="q-opt ${oi===q.ans?'correct':''}">${['A','B','C','D'][oi]}. ${o} ${oi===q.ans?'✓':''}</div>`).join('')}
+    </div>
+  </div>`).join('');
+}
+function openQuizModal(id=null){
+  if(id){
+    let q=null; let topic='';
+    for(const [t,qs] of Object.entries(quizData)){const f=qs.find(x=>x.id===id);if(f){q=f;topic=t;break;}}
+    if(!q)return;
+    document.getElementById('qmTitle').textContent='Edit Question';
+    document.getElementById('qmTopic').value=topic;
+    document.getElementById('qmQ').value=q.q; document.getElementById('qmCode').value=q.code||'';
+    document.getElementById('qmExp').value=q.exp||'';
+    q.opts.forEach((o,i)=>document.getElementById('qOpt'+i).value=o);
+    const radios=document.querySelectorAll('input[name="qans"]');
+    radios.forEach(r=>{r.checked=parseInt(r.value)===q.ans;});
+    document.getElementById('qmEditId').value=id;
+  } else {
+    document.getElementById('qmTitle').textContent='Add Question';
+    ['qmQ','qmCode','qmExp','qOpt0','qOpt1','qOpt2','qOpt3'].forEach(i=>document.getElementById(i).value='');
+    document.querySelectorAll('input[name="qans"]').forEach(r=>r.checked=false);
+    document.getElementById('qmTopic').value=currentQuizTopic;
+    document.getElementById('qmEditId').value='';
+  }
+  document.getElementById('quizModal').classList.add('open');
+}
+function saveQuestion(){
+  const topic=document.getElementById('qmTopic').value;
+  const q=document.getElementById('qmQ').value.trim();
+  if(!q){showToast('Please enter the question!',true);return;}
+  const opts=[0,1,2,3].map(i=>document.getElementById('qOpt'+i).value.trim());
+  if(opts.some(o=>!o)){showToast('Please fill all 4 answer options!',true);return;}
+  const ansEl=document.querySelector('input[name="qans"]:checked');
+  if(!ansEl){showToast('Please mark the correct answer!',true);return;}
+  const ans=parseInt(ansEl.value), code=document.getElementById('qmCode').value.trim(), exp=document.getElementById('qmExp').value.trim();
+  const editId=document.getElementById('qmEditId').value;
+  if(!quizData[topic]) quizData[topic]=[];
+  if(editId){
+    for(const t of Object.keys(quizData)){const idx=quizData[t].findIndex(x=>x.id==editId);if(idx>=0){quizData[t][idx]={...quizData[t][idx],q,opts,ans,code,exp};break;}}
+    showToast('Question updated!');
+  } else {
+    quizData[topic].push({id:Date.now(),q,opts,ans,code,exp});
+    showToast('Question added!');
+  }
+  save(); renderQuizTabs(); setQuizTopic(topic); closeMo('quizModal');
+}
+
+/* ==================== GAMES ==================== */
+function renderGames(){
+  document.getElementById('gamesGrid').innerHTML = games.map(g=>`
+  <div class="gm-card">
+    <div class="gm-banner" style="background:${g.banner}">${g.emoji}</div>
+    <div class="gm-body">
+      <div class="gm-head">
+        <h3>${g.name}</h3>
+        <div class="toggle-wrap">
+          <span class="toggle-lbl">${g.enabled?'<span class="gm-enabled">Enabled</span>':'<span class="gm-disabled">Disabled</span>'}</span>
+          <button class="toggle ${g.enabled?'on':''}" onclick="toggleGame(${g.id})" title="${g.enabled?'Disable':'Enable'} game"></button>
+        </div>
+      </div>
+      <p class="gm-desc">${g.desc}</p>
+      <div class="gm-stats">
+        <span class="gm-st"><i class="fas fa-gamepad"></i>${g.plays.toLocaleString()} plays</span>
+        <span class="gm-st"><i class="fas fa-star"></i>${g.rating}/5.0</span>
+        <span class="gm-st" style="color:${g.enabled?'var(--green)':'var(--red)'}"><i class="fas fa-circle" style="font-size:.55rem"></i>${g.enabled?'Live':'Offline'}</span>
+      </div>
+    </div>
+  </div>`).join('');
+}
+function toggleGame(id){
+  const g=games.find(x=>x.id===id); if(!g)return;
+  g.enabled=!g.enabled;
+  save(); renderGames();
+  showToast(`${g.name} ${g.enabled?'enabled':'disabled'}!`);
+}
+
+/* ==================== NOTICES ==================== */
+const CAT_CLASSES={Announcement:'nb-a',Important:'nb-i',Reminder:'nb-r',General:'nb-g'};
+const BANNERS={Announcement:'linear-gradient(90deg,#4A90E2,#00C8FF)',Important:'linear-gradient(90deg,#FF6B6B,#FFB800)',Reminder:'linear-gradient(90deg,#FFB800,#FF9500)',General:'linear-gradient(90deg,#00E5A0,#4A90E2)'};
+function renderNotices(){
+  document.getElementById('noticeCount').textContent=notices.length;
+  const g=document.getElementById('noticeGrid');
+  if(!notices.length){g.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1"><i class="fas fa-bullhorn" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px"></i>No notices yet.</div>`;return;}
+  g.innerHTML=notices.map(n=>`
+  <div class="nc">
+    <div class="nc-bar" style="background:${BANNERS[n.category]||BANNERS.General}"></div>
+    <div class="nc-body">
+      <div class="nc-hd">
+        <span class="nc-badge ${CAT_CLASSES[n.category]||'nb-g'}">${n.category}</span>
+        <div class="nc-acts">
+          <button class="nc-btn nce" onclick="openNoticeModal(${n.id})"><i class="fas fa-edit"></i></button>
+          <button class="nc-btn ncd" onclick="confirmDelete('notice',${n.id})"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="nc-title">${n.title}</div>
+      <div class="nc-txt">${n.content}</div>
+      <div class="nc-ft">
+        <span class="nc-date"><i class="fas fa-calendar"></i>${n.date}</span>
+        <span class="nc-scope">${n.target}</span>
+      </div>
+    </div>
+  </div>`).join('');
+}
+function openNoticeModal(id=null){
+  if(id){
+    const n=notices.find(x=>x.id===id);
+    document.getElementById('nmTitle').textContent='Edit Notice';
+    document.getElementById('nmTitle2').value=n.title;
+    document.getElementById('nmCat').value=n.category;
+    document.getElementById('nmTarget').value=n.target;
+    document.getElementById('nmContent').value=n.content;
+    document.getElementById('nmEditId').value=id;
+  } else {
+    document.getElementById('nmTitle').textContent='Create Notice';
+    ['nmTitle2','nmContent'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('nmCat').value='Announcement';
+    document.getElementById('nmTarget').value='All Users';
+    document.getElementById('nmEditId').value='';
+  }
+  document.getElementById('noticeModal').classList.add('open');
+}
+function saveNotice(){
+  const title=document.getElementById('nmTitle2').value.trim(), content=document.getElementById('nmContent').value.trim();
+  if(!title||!content){showToast('Please fill title and content!',true);return;}
+  const category=document.getElementById('nmCat').value, target=document.getElementById('nmTarget').value;
+  const editId=document.getElementById('nmEditId').value, today=new Date().toISOString().split('T')[0];
+  if(editId){
+    const idx=notices.findIndex(n=>n.id==editId);
+    if(idx>=0)notices[idx]={...notices[idx],title,content,category,target,date:today};
+    showToast('Notice updated!');
+  } else {
+    notices.unshift({id:Date.now(),title,content,category,target,date:today});
+    showToast('Notice posted!');
+  }
+  save(); renderNotices(); closeMo('noticeModal');
+}
+
+/* ==================== DELETE CONFIRM ==================== */
+function confirmDelete(type,id){
+  const msgs={user:'Delete this user permanently?',course:'Delete this course and all its topics?',question:'Delete this quiz question?',notice:'Delete this notice?'};
+  document.getElementById('confirmMsg').textContent = (msgs[type]||'Delete this item?') + ' This cannot be undone.';
+  document.getElementById('confirmOkBtn').onclick = ()=>{
+    if(type==='user'){users=users.filter(u=>u.id!==id);save();updateKPIs();renderUserTable(users);showToast('User deleted.');}
+    else if(type==='course'){courses=courses.filter(c=>c.id!==id);save();renderCourses();showToast('Course deleted.');}
+    else if(type==='question'){for(const t of Object.keys(quizData)){quizData[t]=quizData[t].filter(q=>q.id!==id);}save();renderQuizList();showToast('Question deleted.');}
+    else if(type==='notice'){notices=notices.filter(n=>n.id!==id);save();renderNotices();showToast('Notice deleted.');}
+    closeMo('confirmModal');
+  };
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+/* ==================== MODALS ==================== */
+function closeMo(id){document.getElementById(id).classList.remove('open');}
+function closeModalClick(e,id){if(e.target===document.getElementById(id))closeMo(id);}
+
+/* ==================== DASHBOARD ACTIVITY ==================== */
+function renderDashActivity(){
+  const acts=[
+    {ico:'✅',bg:'rgba(0,229,160,0.15)',h:'Bilal Rana completed Python — OOP',p:'Advanced Python · 97% quiz score',t:'4m ago'},
+    {ico:'🆕',bg:'rgba(74,144,226,0.15)',h:'New student registered: Malia Chen',p:'Role: Student · JavaScript Basics',t:'22m ago'},
+    {ico:'🐛',bg:'rgba(255,107,107,0.15)',h:'Ahmed Hassan: 5 SyntaxErrors in Sandbox',p:'Python — Loops section',t:'45m ago'},
+    {ico:'🎮',bg:'rgba(155,89,182,0.15)',h:'Code Snake reached 2,841 total plays',p:'Games milestone reached!',t:'1h ago'},
+    {ico:'🧠',bg:'rgba(255,184,0,0.15)',h:'342 quiz attempts this week',p:'Platform record for quiz engagement',t:'3h ago'},
+  ];
+  document.getElementById('dashActivity').innerHTML=acts.map(a=>`
+  <div style="display:flex;align-items:center;gap:11px;padding:11px 13px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:11px">
+    <div style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;background:${a.bg}">${a.ico}</div>
+    <div style="flex:1"><div style="font-size:.83rem;font-weight:600;margin-bottom:2px">${a.h}</div><div style="font-size:.74rem;color:var(--muted)">${a.p}</div></div>
+    <span style="font-size:.72rem;color:var(--muted);white-space:nowrap">${a.t}</span>
+  </div>`).join('');
+}
+
+/* ==================== CHARTS ==================== */
+const CO={responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#8EA8C3',font:{family:'Sora',size:11}}}}};
+const SCL={x:{ticks:{color:'#8EA8C3'},grid:{color:'rgba(74,144,226,0.08)'}},y:{ticks:{color:'#8EA8C3'},grid:{color:'rgba(74,144,226,0.08)'}}};
+
+function initDashCharts(){
+  new Chart(document.getElementById('trafficChart'),{
+    type:'line',
+    data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[
+        {label:'Visitors',data:[142,185,168,210,195,98,72],borderColor:'#4A90E2',backgroundColor:'rgba(74,144,226,0.1)',tension:.4,fill:true,pointBackgroundColor:'#4A90E2',pointRadius:4},
+        {label:'Active Users',data:[89,115,104,142,128,62,48],borderColor:'#00C8FF',backgroundColor:'rgba(0,200,255,0.07)',tension:.4,fill:true,pointBackgroundColor:'#00C8FF',pointRadius:4},
+      ]},options:{...CO,scales:SCL}
+  });
+  new Chart(document.getElementById('roleChart'),{
+    type:'doughnut',
+    data:{labels:['Students','Teachers','Admins'],datasets:[{data:[98,18,8],backgroundColor:['rgba(74,144,226,0.85)','rgba(155,89,182,0.85)','rgba(255,107,107,0.85)'],borderWidth:0,hoverOffset:7}]},
+    options:{...CO,cutout:'62%',plugins:{...CO.plugins,legend:{...CO.plugins.legend,position:'bottom'}}}
+  });
+  new Chart(document.getElementById('regChart'),{
+    type:'bar',
+    data:{labels:['Week 1','Week 2','Week 3','Week 4','Week 5'],
+      datasets:[{label:'New Registrations',data:[8,14,11,18,23],backgroundColor:'rgba(74,144,226,0.7)',borderColor:'#4A90E2',borderWidth:2,borderRadius:8}]},
+    options:{...CO,scales:SCL,plugins:{...CO.plugins,legend:{display:false}}}
+  });
+}
+
+function initAnalyticsCharts(){
+  new Chart(document.getElementById('monthlyChart'),{
+    type:'line',
+    data:{labels:['Aug','Sep','Oct','Nov','Dec','Jan'],
+      datasets:[
+        {label:'Page Views',data:[1200,1840,2100,2680,3100,3800],borderColor:'#4A90E2',backgroundColor:'rgba(74,144,226,0.1)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'#4A90E2'},
+        {label:'Registrations',data:[12,28,35,52,68,89],borderColor:'#00E5A0',backgroundColor:'rgba(0,229,160,0.07)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'#00E5A0'},
+      ]},
+    options:{...CO,scales:SCL}
+  });
+  const topCourses=[
+    {rank:'🥇',name:'Python Fundamentals',enrolled:38,fill:100},
+    {rank:'🥈',name:'JavaScript Basics',enrolled:31,fill:81},
+    {rank:'🥉',name:'HTML / CSS',enrolled:31,fill:81},
+    {rank:'4',name:'Advanced Python',enrolled:24,fill:63},
+    {rank:'5',name:'C Programming',enrolled:14,fill:37},
+    {rank:'6',name:'C++ Essentials',enrolled:10,fill:26},
+  ];
+  document.getElementById('topCrsList').innerHTML=topCourses.map((c,i)=>`
+  <div class="tcrs-row">
+    <div class="tcrs-rank ${i===0?'tr1':i===1?'tr2':i===2?'tr3':'trn'}">${c.rank}</div>
+    <div class="tcrs-info">
+      <h5>${c.name}</h5>
+      <div class="tcrs-bar"><div class="tcrs-fill" style="width:${c.fill}%"></div></div>
+    </div>
+    <div class="tcrs-num">${c.enrolled}</div>
+  </div>`).join('');
+  new Chart(document.getElementById('gameChart'),{
+    type:'doughnut',
+    data:{labels:['Code Snake','Break the Code','Murder Mystery'],datasets:[{data:[1284,942,615],backgroundColor:['rgba(74,144,226,0.8)','rgba(0,229,160,0.8)','rgba(155,89,182,0.8)'],borderWidth:0,hoverOffset:7}]},
+    options:{...CO,cutout:'58%',plugins:{...CO.plugins,legend:{...CO.plugins.legend,position:'bottom'}}}
+  });
+  new Chart(document.getElementById('anaQuizChart'),{
+    type:'bar',
+    data:{labels:['Variables','Conditions','Loops','Functions','Lists','Operators'],
+      datasets:[{label:'Avg Score %',data:[85,74,68,71,79,88],backgroundColor:['rgba(74,144,226,.75)','rgba(0,200,255,.75)','rgba(0,229,160,.75)','rgba(255,184,0,.75)','rgba(155,89,182,.75)','rgba(255,107,107,.75)'],borderRadius:7,borderWidth:0}]},
+    options:{...CO,scales:{...SCL,y:{...SCL.y,min:0,max:100}},plugins:{...CO.plugins,legend:{display:false}}}
+  });
+}
+
+/* ==================== TOAST ==================== */
+function showToast(msg,isErr=false){
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  t.className='toast show'+(isErr?' err':'');
+  setTimeout(()=>t.className='toast',3500);
+}
+
+/* ==================== AUTH ==================== */
+function logout(){localStorage.removeItem('pyquest_current_user');window.location.href='login.html';}
+
+/* ==================== START ==================== */
+window.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>

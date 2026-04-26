@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - PyQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --navy: #0D1B2A;
+            --navy-2: #162336;
+            --navy-3: #1E2D42;
+            --blue: #4A90E2;
+            --blue-light: #6BAEFF;
+            --accent: #00C8FF;
+            --green: #00E5A0;
+            --white: #FFFFFF;
+            --muted: #8EA8C3;
+            --border: rgba(74,144,226,0.22);
+            --card-bg: rgba(22,35,54,0.97);
+            --error: #FF6B6B;
+        }
+        * { margin:0;padding:0;box-sizing:border-box; }
+        body {
+            font-family:'Sora',sans-serif;
+            background:var(--navy);
+            min-height:100vh;
+            display:flex;flex-direction:column;
+            overflow-x:hidden;
+        }
+        .bg-effects { position:fixed;inset:0;pointer-events:none;z-index:0; }
+        .bg-blob { position:absolute;border-radius:50%;filter:blur(80px);opacity:0.12; }
+        .blob1 { width:500px;height:500px;background:var(--blue);top:-100px;left:-100px;animation:bm 10s ease-in-out infinite; }
+        .blob2 { width:400px;height:400px;background:var(--accent);bottom:-100px;right:-80px;animation:bm 12s ease-in-out infinite reverse; }
+        @keyframes bm { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2) translate(15px,15px)} }
+
+        .topbar {
+            position:relative;z-index:10;padding:18px 5%;
+            display:flex;align-items:center;justify-content:space-between;
+            border-bottom:1px solid var(--border);
+            background:rgba(13,27,42,0.8);backdrop-filter:blur(20px);
+        }
+        .logo {
+            font-size:1.5rem;font-weight:800;
+            color:var(--white);text-decoration:none;
+            display:flex;align-items:center;gap:9px;
+        }
+        .logo span { background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+        .logo-ico { width:34px;height:34px;background:linear-gradient(135deg,var(--blue),var(--accent));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;color:white;-webkit-text-fill-color:white; }
+        .back-link { color:var(--muted);text-decoration:none;font-size:0.88rem;display:flex;align-items:center;gap:7px;transition:color 0.2s; }
+        .back-link:hover { color:var(--blue-light); }
+
+        .auth-main {
+            flex:1;display:flex;align-items:center;justify-content:center;
+            padding:40px 20px;position:relative;z-index:5;
+        }
+        .reg-container {
+            max-width:600px;width:100%;
+            background:var(--card-bg);
+            border:1px solid var(--border);
+            border-radius:24px;overflow:hidden;
+            box-shadow:0 30px 80px rgba(0,0,0,0.5);
+            animation:slideUp 0.6s ease both;
+        }
+        @keyframes slideUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+        .reg-top {
+            background:linear-gradient(135deg,rgba(74,144,226,0.18),rgba(0,200,255,0.06));
+            border-bottom:1px solid var(--border);
+            padding:36px 44px 28px;text-align:center;
+        }
+        .reg-top h2 { font-size:1.75rem;font-weight:800;margin-bottom:8px; }
+        .reg-top h2 span { background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+        .reg-top p { color:var(--muted);font-size:0.9rem;line-height:1.6; }
+
+        .reg-body { padding:36px 44px 40px; }
+
+        .form-row { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+        .form-group { margin-bottom:18px; }
+        .form-group label { display:block;font-size:0.85rem;font-weight:600;color:var(--white);margin-bottom:7px; }
+        .input-wrap { position:relative; }
+        .input-wrap i.ico { position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.88rem;pointer-events:none;transition:color 0.2s; }
+        .form-input {
+            width:100%;padding:12px 14px 12px 42px;
+            background:rgba(255,255,255,0.04);
+            border:1.5px solid var(--border);
+            border-radius:11px;color:var(--white);
+            font-size:0.91rem;font-family:'Sora',sans-serif;
+            transition:all 0.25s;outline:none;
+        }
+        .form-input::placeholder { color:var(--muted); }
+        .form-input:focus { border-color:var(--blue);background:rgba(74,144,226,0.07);box-shadow:0 0 0 3px rgba(74,144,226,0.14); }
+        .form-input:focus ~ .ico,.input-wrap:focus-within i.ico { color:var(--blue); }
+        .eye-btn { position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:0.88rem;transition:color 0.2s;padding:4px; }
+        .eye-btn:hover { color:var(--blue); }
+
+        .pass-strength { margin-top:7px; }
+        .strength-bar { height:4px;background:var(--navy-3);border-radius:50px;overflow:hidden;margin-bottom:5px; }
+        .strength-fill { height:100%;border-radius:50px;transition:all 0.4s ease;width:0; }
+        .strength-text { font-size:0.75rem;color:var(--muted); }
+
+        .role-label { font-size:0.85rem;font-weight:600;margin-bottom:10px;color:var(--white); }
+        .role-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px; }
+        .role-opt { display:none; }
+        .role-lbl {
+            display:flex;flex-direction:column;align-items:center;gap:8px;
+            padding:14px 10px;
+            background:rgba(255,255,255,0.03);
+            border:1.5px solid var(--border);
+            border-radius:12px;cursor:pointer;transition:all 0.25s;
+            font-size:0.82rem;font-weight:500;color:var(--muted);
+        }
+        .role-lbl:hover { border-color:var(--blue);color:var(--white);background:rgba(74,144,226,0.08); }
+        .role-opt:checked + .role-lbl {
+            border-color:var(--blue);
+            background:rgba(74,144,226,0.15);
+            color:var(--blue-light);
+        }
+        .role-ico { font-size:1.5rem; }
+
+        .field-err { font-size:0.78rem;color:var(--error);margin-top:6px;display:none; }
+        .field-err.show { display:block; }
+        .err-banner {
+            background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);
+            color:var(--error);border-radius:10px;padding:12px 16px;
+            font-size:0.85rem;margin-bottom:16px;
+            display:none;align-items:center;gap:9px;
+        }
+        .err-banner.show { display:flex; }
+
+        .terms-row { display:flex;align-items:flex-start;gap:10px;margin-bottom:22px; }
+        .terms-row input[type="checkbox"] { width:16px;height:16px;accent-color:var(--blue);cursor:pointer;flex-shrink:0;margin-top:2px; }
+        .terms-row label { font-size:0.84rem;color:var(--muted);line-height:1.55;cursor:pointer; }
+        .terms-row a { color:var(--blue-light);text-decoration:none;transition:color 0.2s; }
+        .terms-row a:hover { color:var(--accent); }
+
+        .btn-reg {
+            width:100%;padding:14px;
+            background:linear-gradient(135deg,var(--blue),var(--accent));
+            border:none;border-radius:12px;color:white;
+            font-size:1rem;font-weight:700;cursor:pointer;
+            font-family:'Sora',sans-serif;transition:all 0.3s;
+            display:flex;align-items:center;justify-content:center;gap:9px;
+        }
+        .btn-reg:hover { transform:translateY(-2px);box-shadow:0 10px 32px rgba(74,144,226,0.45); }
+        .btn-reg:disabled { opacity:0.7;cursor:not-allowed;transform:none; }
+        .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:none; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        .auth-footer { text-align:center;margin-top:20px;font-size:0.87rem;color:var(--muted); }
+        .auth-footer a { color:var(--blue-light);text-decoration:none;font-weight:600;transition:color 0.2s; }
+        .auth-footer a:hover { color:var(--accent); }
+
+        .toast {
+            position:fixed;bottom:28px;right:28px;
+            background:var(--navy-2);border:1px solid var(--green);
+            color:var(--green);padding:15px 22px;
+            border-radius:14px;font-size:0.9rem;font-weight:600;
+            display:flex;align-items:center;gap:9px;
+            transform:translateY(100px);opacity:0;
+            transition:all 0.4s ease;z-index:9999;
+        }
+        .toast.show { transform:translateY(0);opacity:1; }
+
+        @media(max-width:540px) {
+            .reg-body,.reg-top { padding:26px 22px; }
+            .form-row { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-effects">
+        <div class="bg-blob blob1"></div>
+        <div class="bg-blob blob2"></div>
+    </div>
+
+    <div class="topbar">
+        <a href="index.html" class="logo">
+            <div class="logo-ico">🐍</div>Py<span>Quest</span>
+        </a>
+        <a href="login.html" class="back-link"><i class="fas fa-sign-in-alt"></i> Already have account? Login</a>
+    </div>
+
+    <div class="auth-main">
+        <div class="reg-container">
+            <div class="reg-top">
+                <h2>Join <span>PyQuest</span> Today! 🚀</h2>
+                <p>Create your free account and start your programming journey. No experience required!</p>
+            </div>
+
+            <div class="reg-body">
+                <div class="err-banner" id="errBanner">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errBannerText">Please fix the errors below.</span>
+                </div>
+
+                <form id="regForm" onsubmit="handleRegister(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <div class="input-wrap">
+                                <i class="fas fa-user ico"></i>
+                                <input type="text" id="firstName" class="form-input" placeholder="First name" required minlength="2">
+                            </div>
+                            <div class="field-err" id="fnErr">Please enter your first name.</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <div class="input-wrap">
+                                <i class="fas fa-user ico"></i>
+                                <input type="text" id="lastName" class="form-input" placeholder="Last name" required minlength="2">
+                            </div>
+                            <div class="field-err" id="lnErr">Please enter your last name.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-envelope ico"></i>
+                            <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" required>
+                        </div>
+                        <div class="field-err" id="emailErr">Please enter a valid email address.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password <span style="color:var(--muted);font-size:0.78rem">(min 6 characters)</span></label>
+                        <div class="input-wrap">
+                            <i class="fas fa-lock ico"></i>
+                            <input type="password" id="regPass" class="form-input" placeholder="Create a password" required minlength="6" oninput="checkStrength(this.value)">
+                            <button type="button" class="eye-btn" onclick="toggleP('regPass','eye1')"><i class="fas fa-eye" id="eye1"></i></button>
+                        </div>
+                        <div class="pass-strength">
+                            <div class="strength-bar"><div class="strength-fill" id="sFill"></div></div>
+                            <span class="strength-text" id="sText">Enter a password</span>
+                        </div>
+                        <div class="field-err" id="passErr">Password must be at least 6 characters.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-lock ico"></i>
+                            <input type="password" id="confPass" class="form-input" placeholder="Repeat your password" required>
+                            <button type="button" class="eye-btn" onclick="toggleP('confPass','eye2')"><i class="fas fa-eye" id="eye2"></i></button>
+                        </div>
+                        <div class="field-err" id="confErr">Passwords do not match.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <p class="role-label">Select Your Role</p>
+                        <div class="role-grid">
+                            <div>
+                                <input type="radio" name="role" id="rStudent" value="student" class="role-opt" checked>
+                                <label for="rStudent" class="role-lbl"><span class="role-ico">🎓</span>Student</label>
+                            </div>
+                            <div>
+                                <input type="radio" name="role" id="rTeacher" value="teacher" class="role-opt">
+                                <label for="rTeacher" class="role-lbl"><span class="role-ico">👨‍🏫</span>Teacher</label>
+                            </div>
+                            <div>
+                                <input type="radio" name="role" id="rAdmin" value="admin" class="role-opt">
+                                <label for="rAdmin" class="role-lbl"><span class="role-ico">⚙️</span>Admin</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="terms-row">
+                        <input type="checkbox" id="terms" required>
+                        <label for="terms">
+                            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> of PyQuest.
+                        </label>
+                    </div>
+                    <div class="field-err" id="termsErr" style="margin-top:-14px;margin-bottom:14px">Please agree to the terms to continue.</div>
+
+                    <button type="submit" class="btn-reg" id="regBtn">
+                        <span class="spinner" id="regSpinner"></span>
+                        <i class="fas fa-user-plus" id="regIcon"></i>
+                        <span id="regBtnText">Create Account</span>
+                    </button>
+                </form>
+
+                <p class="auth-footer">
+                    Already have an account? <a href="login.html">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMsg">Account created successfully!</span>
+    </div>
+
+    <script>
+        function toggleP(id, iconId) {
+            const inp = document.getElementById(id);
+            const ico = document.getElementById(iconId);
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+            ico.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        }
+
+        function checkStrength(val) {
+            const fill = document.getElementById('sFill');
+            const text = document.getElementById('sText');
+            let strength = 0;
+            if (val.length >= 6) strength++;
+            if (val.length >= 10) strength++;
+            if (/[A-Z]/.test(val)) strength++;
+            if (/[0-9]/.test(val)) strength++;
+            if (/[^A-Za-z0-9]/.test(val)) strength++;
+            const levels = [
+                { w:'0%', c:'#FF6B6B', t:'Too short' },
+                { w:'25%', c:'#FF6B6B', t:'Weak' },
+                { w:'50%', c:'#FFB800', t:'Fair' },
+                { w:'75%', c:'#4A90E2', t:'Good' },
+                { w:'100%', c:'#00E5A0', t:'Strong 💪' },
+            ];
+            const l = levels[Math.min(strength, 4)];
+            fill.style.width = l.w;
+            fill.style.background = l.c;
+            text.textContent = val.length === 0 ? 'Enter a password' : l.t;
+            text.style.color = l.c;
+        }
+
+        function showToast(msg, isErr=false) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            t.style.borderColor = isErr ? '#FF6B6B' : '#00E5A0';
+            t.style.color = isErr ? '#FF6B6B' : '#00E5A0';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        function showErr(id, show) {
+            document.getElementById(id).classList.toggle('show', show);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const fn    = document.getElementById('firstName').value.trim();
+            const ln    = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pass  = document.getElementById('regPass').value;
+            const conf  = document.getElementById('confPass').value;
+            const role  = document.querySelector('input[name="role"]:checked').value;
+            const terms = document.getElementById('terms').checked;
+
+            ['fnErr','lnErr','emailErr','passErr','confErr','termsErr'].forEach(id => showErr(id, false));
+            document.getElementById('errBanner').classList.remove('show');
+
+            let valid = true;
+            if (fn.length < 2)                                { showErr('fnErr', true);    valid = false; }
+            if (ln.length < 2)                                { showErr('lnErr', true);    valid = false; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))   { showErr('emailErr', true); valid = false; }
+            if (pass.length < 6)                              { showErr('passErr', true);  valid = false; }
+            if (pass !== conf)                                { showErr('confErr', true);  valid = false; }
+            if (!terms)                                       { showErr('termsErr', true); valid = false; }
+
+            if (!valid) {
+                document.getElementById('errBanner').classList.add('show');
+                document.getElementById('errBannerText').textContent = 'Please fix all errors before submitting.';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('pyquest_users') || '[]');
+            if (users.find(u => u.email === email)) {
+                document.getElementById('errBanner').classList.add('show');
+                document.getElementById('errBannerText').textContent = 'An account with this email already exists.';
+                showErr('emailErr', true);
+                return;
+            }
+
+            document.getElementById('regSpinner').style.display = 'block';
+            document.getElementById('regIcon').style.display    = 'none';
+            document.getElementById('regBtnText').textContent   = 'Creating account...';
+            document.getElementById('regBtn').disabled          = true;
+
+            setTimeout(() => {
+                const newUser = {
+                    id: Date.now(),
+                    firstName: fn, lastName: ln, email, password: pass, role,
+                    joinedAt: new Date().toISOString(),
+                    progress: { topicsCompleted: 0, problemsSolved: 0, quizzesDone: 0, streak: 0 }
+                };
+                users.push(newUser);
+                localStorage.setItem('pyquest_users', JSON.stringify(users));
+                localStorage.setItem('pyquest_current_user', JSON.stringify(newUser));
+
+                document.getElementById('regSpinner').style.display = 'none';
+                document.getElementById('regBtnText').textContent   = '✓ Account Created!';
+                showToast('Welcome to PyQuest, ' + fn + '! 🎉');
+
+                setTimeout(() => {
+                    if (role === 'admin')        window.location.href = 'Admin.html';
+                    else if (role === 'teacher') window.location.href = 'Teacher.html';
+                    else                         window.location.href = 'studentdashboard.html';
+                }, 1500);
+            }, 1300);
+        }
+    </script>
+</body>
+</html>

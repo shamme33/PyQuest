@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Codex - System Design Challenges</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a3f 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 30px; font-size: 2.5em; background: linear-gradient(135deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .challenge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .challenge-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #4ecdc4;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        .challenge-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(78, 205, 196, 0.3);
+            border-color: #ff6b6b;
+        }
+        .challenge-card.completed {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: #4ecdc4;
+        }
+        .challenge-card h3 { color: #ff6b6b; margin-bottom: 10px; font-size: 1.3em; }
+        .challenge-card .difficulty {
+            display: inline-block;
+            padding: 5px 10px;
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .challenge-card p { font-size: 14px; color: rgba(255, 255, 255, 0.7); line-height: 1.5; }
+        .challenge-card .status { margin-top: 15px; text-align: center; color: #4ecdc4; font-weight: bold; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s;
+        }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content {
+            background: linear-gradient(135deg, rgba(15, 15, 30, 0.95), rgba(26, 26, 63, 0.95));
+            border: 2px solid #4ecdc4;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal h2 { color: #ff6b6b; margin-bottom: 15px; font-size: 2em; }
+        .modal .difficulty { display: inline-block; }
+        .scenario {
+            background: rgba(78, 205, 196, 0.1);
+            border-left: 4px solid #4ecdc4;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .requirements {
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid #ff6b6b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .requirements h4 { color: #ff6b6b; margin-bottom: 10px; }
+        .requirements ul { margin-left: 20px; }
+        .requirements li { margin-bottom: 8px; }
+        .solution-space {
+            background: #0a0a14;
+            border: 2px solid #4ecdc4;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 250px;
+            background: #0a0a14;
+            color: #4ecdc4;
+            border: 2px solid #4ecdc4;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border-radius: 5px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        textarea:focus { outline: none; box-shadow: 0 0 15px rgba(78, 205, 196, 0.5); }
+        .controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        button {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4); }
+        button:active { transform: translateY(0); }
+        .close-btn {
+            color: #ff6b6b;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            float: right;
+            line-height: 20px;
+        }
+        .close-btn:hover { color: #4ecdc4; }
+        .evaluation {
+            background: rgba(78, 205, 196, 0.1);
+            border: 2px solid #4ecdc4;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 80px;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ecdc4;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .hint-section {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 TECH CODEX</h1>
+        
+        <div class="challenge-grid" id="challenge-grid"></div>
+    </div>
+
+    <div id="challengeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeChallenge()">&times;</span>
+            <h2 id="modal-title"></h2>
+            <span class="difficulty" id="modal-difficulty"></span>
+            
+            <div class="scenario" id="modal-scenario"></div>
+            <div class="requirements" id="modal-requirements"></div>
+            
+            <div class="solution-space">
+                <h4>Your Solution Design:</h4>
+                <textarea id="solution-input" placeholder="Describe your system design, including components, interactions, and data flow..."></textarea>
+                <div class="controls">
+                    <button onclick="submitSolution()">✓ Submit Design</button>
+                    <button onclick="resetSolution()">↻ Reset</button>
+                </div>
+            </div>
+
+            <div class="evaluation" id="evaluation" style="display: none;">
+                <h4 style="color: #4ecdc4; margin-bottom: 10px;">Evaluation:</h4>
+                <div id="evaluation-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const challenges = [
+            {
+                id: 1,
+                title: "Design a URL Shortener",
+                difficulty: "Medium",
+                scenario: "You need to build a URL shortening service like bit.ly. Users should be able to submit long URLs and receive short, unique aliases. The service must handle high traffic and ensure short URLs are generated quickly.",
+                requirements: [
+                    "Handle URL shortening for millions of URLs",
+                    "Ensure unique short aliases",
+                    "Redirect users from short URL to original",
+                    "Track analytics (click count)",
+                    "Handle concurrent requests efficiently"
+                ],
+                evaluation: [
+                    { keyword: "database", score: 20, feedback: "Database choice is critical - consider hash tables for fast lookups" },
+                    { keyword: "hash", score: 25, feedback: "Hash functions/encoding for generating short codes" },
+                    { keyword: "cache", score: 20, feedback: "Caching layer for hot URLs improves performance" },
+                    { keyword: "load", score: 20, feedback: "Load balancing for horizontal scaling" },
+                    { keyword: "redirect", score: 15, feedback: "HTTP redirect mechanism (301/302)" }
+                ]
+            },
+            {
+                id: 2,
+                title: "Real-time Chat Application",
+                difficulty: "Hard",
+                scenario: "Design a scalable, real-time chat application that supports private messaging and group chats. Messages must be delivered instantly and the system must handle millions of concurrent users.",
+                requirements: [
+                    "Real-time message delivery (< 100ms latency)",
+                    "Support for 1-to-1 and group conversations",
+                    "Message history persistence",
+                    "User presence (online/offline status)",
+                    "Horizontal scalability for millions of users",
+                    "Message encryption for privacy"
+                ],
+                evaluation: [
+                    { keyword: "websocket", score: 25, feedback: "WebSockets for real-time bidirectional communication" },
+                    { keyword: "message queue", score: 20, feedback: "Message brokers (Kafka, RabbitMQ) for reliability" },
+                    { keyword: "distributed", score: 20, feedback: "Distributed database for scaling" },
+                    { keyword: "cache", score: 15, feedback: "Redis for presence and quick lookups" },
+                    { keyword: "encryption", score: 20, feedback: "End-to-end encryption implementation" }
+                ]
+            },
+            {
+                id: 3,
+                title: "Build a Distributed Task Queue",
+                difficulty: "Hard",
+                scenario: "Design a task queue system where jobs can be submitted, queued, and processed by multiple workers. The system must ensure reliability and support retries for failed tasks.",
+                requirements: [
+                    "Job submission and queuing",
+                    "Distributed worker processing",
+                    "Failure handling and retries",
+                    "Job status tracking",
+                    "Scalable to millions of jobs",
+                    "Priority queue support"
+                ],
+                evaluation: [
+                    { keyword: "queue", score: 25, feedback: "Central queue (Redis, RabbitMQ) for job distribution" },
+                    { keyword: "worker", score: 25, feedback: "Multiple workers consuming jobs concurrently" },
+                    { keyword: "retry", score: 20, feedback: "Exponential backoff and dead letter queues" },
+                    { keyword: "persistence", score: 15, feedback: "Persistent storage for job state" },
+                    { keyword: "priority", score: 15, feedback: "Priority-based job processing" }
+                ]
+            },
+            {
+                id: 4,
+                title: "Design a Video Streaming Service",
+                difficulty: "Hard",
+                scenario: "Create a video streaming platform capable of handling millions of users simultaneously. Videos must start quickly and adapt to varying bandwidth.",
+                requirements: [
+                    "Adaptive bitrate streaming",
+                    "Content delivery network (CDN) usage",
+                    "Fast video encoding pipeline",
+                    "User experience optimization",
+                    "Analytics and reporting",
+                    "Support for millions of concurrent streams"
+                ],
+                evaluation: [
+                    { keyword: "cdn", score: 25, feedback: "CDN for global content distribution" },
+                    { keyword: "adaptive", score: 20, feedback: "Adaptive bitrate (ABR) algorithms" },
+                    { keyword: "encoding", score: 20, feedback: "Efficient video encoding (H.264, VP9)" },
+                    { keyword: "cache", score: 20, feedback: "Multi-layer caching strategy" },
+                    { keyword: "monitoring", score: 15, feedback: "Real-time monitoring and metrics" }
+                ]
+            },
+            {
+                id: 5,
+                title: "Design an E-Commerce Platform",
+                difficulty: "Medium",
+                scenario: "Build a scalable e-commerce system handling product browsing, shopping carts, orders, and payments. The system must handle peak traffic during sales.",
+                requirements: [
+                    "Product catalog management",
+                    "Shopping cart functionality",
+                    "Order processing",
+                    "Payment integration",
+                    "Inventory management",
+                    "Peak traffic handling"
+                ],
+                evaluation: [
+                    { keyword: "database", score: 20, feedback: "Separate databases for products, orders, inventory" },
+                    { keyword: "cache", score: 20, feedback: "Cache product data and shopping carts" },
+                    { keyword: "inventory", score: 20, feedback: "Distributed inventory tracking" },
+                    { keyword: "payment", score: 20, feedback: "Secure payment gateway integration" },
+                    { keyword: "queue", score: 20, feedback: "Order processing queue for reliability" }
+                ]
+            },
+            {
+                id: 6,
+                title: "Design Social Media Platform",
+                difficulty: "Hard",
+                scenario: "Design a social media platform with user profiles, posts, feeds, and notifications. Handle billions of posts and complex graph relationships.",
+                requirements: [
+                    "User authentication and profiles",
+                    "Post creation and sharing",
+                    "Social graph (friends/followers)",
+                    "News feed generation",
+                    "Real-time notifications",
+                    "Horizontal scalability"
+                ],
+                evaluation: [
+                    { keyword: "graph", score: 25, feedback: "Graph database or denormalized relationships" },
+                    { keyword: "feed", score: 25, feedback: "Feed generation algorithms (push/pull model)" },
+                    { keyword: "cache", score: 20, feedback: "Aggressive caching for feed performance" },
+                    { keyword: "notification", score: 15, feedback: "Real-time notification system" },
+                    { keyword: "sharding", score: 15, feedback: "Data sharding by user ID" }
+                ]
+            }
+        ];
+
+        let completed = [];
+        let currentChallenge = null;
+
+        function renderChallenges() {
+            const grid = document.getElementById('challenge-grid');
+            grid.innerHTML = '';
+
+            challenges.forEach(challenge => {
+                const isCompleted = completed.includes(challenge.id);
+                const card = document.createElement('div');
+                card.className = `challenge-card ${isCompleted ? 'completed' : ''}`;
+                card.onclick = () => openChallenge(challenge.id);
+                
+                card.innerHTML = `
+                    <h3>${challenge.title}</h3>
+                    <div class="difficulty">${challenge.difficulty}</div>
+                    <p>${challenge.scenario.substring(0, 100)}...</p>
+                    <div class="status">${isCompleted ? '✓ Completed' : 'Pending'}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openChallenge(id) {
+            currentChallenge = challenges.find(c => c.id === id);
+            document.getElementById('modal-title').textContent = currentChallenge.title;
+            document.getElementById('modal-difficulty').textContent = currentChallenge.difficulty;
+            document.getElementById('modal-scenario').textContent = currentChallenge.scenario;
+            
+            let reqHtml = '<h4>Key Requirements:</h4><ul>';
+            currentChallenge.requirements.forEach(req => {
+                reqHtml += `<li>${req}</li>`;
+            });
+            reqHtml += '</ul>';
+            document.getElementById('modal-requirements').innerHTML = reqHtml;
+            
+            document.getElementById('solution-input').value = '';
+            document.getElementById('evaluation').style.display = 'none';
+            
+            document.getElementById('challengeModal').classList.add('active');
+        }
+
+        function closeChallenge() {
+            document.getElementById('challengeModal').classList.remove('active');
+            currentChallenge = null;
+        }
+
+        function resetSolution() {
+            document.getElementById('solution-input').value = '';
+            document.getElementById('evaluation').style.display = 'none';
+        }
+
+        function submitSolution() {
+            const solution = document.getElementById('solution-input').value.toLowerCase();
+            const evalDiv = document.getElementById('evaluation');
+            
+            let totalScore = 0;
+            let feedback = '<ul style="margin-left: 20px;">';
+            
+            currentChallenge.evaluation.forEach(criterion => {
+                if (solution.includes(criterion.keyword)) {
+                    totalScore += criterion.score;
+                    feedback += `<li style="color: #4ecdc4; margin-bottom: 8px;"><strong>${criterion.keyword}:</strong> ${criterion.feedback} (+${criterion.score}%)</li>`;
+                } else {
+                    feedback += `<li style="color: #ff9999; margin-bottom: 8px;"><strong>${criterion.keyword}:</strong> Not mentioned (0%)</li>`;
+                }
+            });
+            
+            feedback += '</ul>';
+            
+            let resultMessage = '';
+            if (totalScore >= 80) {
+                resultMessage = '🏆 Excellent Design! You demonstrated strong system design skills.';
+                if (!completed.includes(currentChallenge.id)) {
+                    completed.push(currentChallenge.id);
+                    renderChallenges();
+                }
+            } else if (totalScore >= 60) {
+                resultMessage = '✓ Good Design! Consider adding more details to key components.';
+            } else {
+                resultMessage = '📝 Review Needed. Check the feedback below for improvement areas.';
+            }
+            
+            document.getElementById('evaluation-content').innerHTML = `
+                <div class="score">Score: ${totalScore}%</div>
+                <p style="margin-bottom: 15px; color: #4ecdc4; text-align: center;">${resultMessage}</p>
+                ${feedback}
+            `;
+            
+            evalDiv.style.display = 'block';
+        }
+
+        // Initialize
+        renderChallenges();
+
+        // Close modal on background click
+        document.getElementById('challengeModal').addEventListener('click', function(e) {
+            if (e.target === this) closeChallenge();
+        });
+    </script>
+</body>
+</html>

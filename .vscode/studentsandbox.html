@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sandbox - PyQuest</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://skulpt.org/js/skulpt.min.js"></script>
+<script src="https://skulpt.org/js/skulpt-stdlib.js"></script>
+<style>
+:root{--navy:#0D1B2A;--navy-2:#162336;--navy-3:#1E2D42;--blue:#4A90E2;--blue-light:#6BAEFF;--accent:#00C8FF;--green:#00E5A0;--yellow:#FFB800;--red:#FF6B6B;--white:#FFFFFF;--muted:#8EA8C3;--border:rgba(74,144,226,0.2);--card:rgba(22,35,54,0.9);--sidebar-w:260px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Sora',sans-serif;background:var(--navy);color:var(--white);display:flex;min-height:100vh;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--navy);}::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px;}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:rgba(13,20,32,0.98);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;transition:transform 0.3s;}
+.sb-logo{padding:24px 22px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);text-decoration:none;}
+.sb-logo-ico{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:white;flex-shrink:0;}
+.sb-logo-txt{font-size:1.3rem;font-weight:800;color:var(--white);}
+.sb-logo-txt span{background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sb-nav{flex:1;padding:16px 12px;overflow-y:auto;}
+.sb-section-lbl{font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:8px 12px 6px;margin-top:6px;}
+.sb-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;text-decoration:none;color:var(--muted);font-size:0.88rem;font-weight:500;transition:all 0.2s;margin-bottom:2px;position:relative;}
+.sb-item:hover{background:rgba(74,144,226,0.1);color:var(--white);}
+.sb-item.active{background:linear-gradient(135deg,rgba(74,144,226,0.2),rgba(0,200,255,0.08));color:var(--white);border:1px solid rgba(74,144,226,0.3);}
+.sb-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:linear-gradient(180deg,var(--blue),var(--accent));border-radius:0 3px 3px 0;}
+.sb-item i{width:20px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:white;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:50px;}
+.sb-bottom{padding:14px 12px;border-top:1px solid var(--border);}
+.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;}
+.sb-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--accent));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;}
+.sb-user-info{flex:1;}.sb-user-name{font-size:0.85rem;font-weight:700;}.sb-user-role{font-size:0.72rem;color:var(--muted);}
+.sb-logout{color:var(--muted);font-size:0.8rem;cursor:pointer;}.sb-logout:hover{color:var(--red);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{padding:16px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(13,27,42,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:14px;}.menu-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:6px;display:none;}
+.breadcrumb{font-size:0.85rem;color:var(--muted);}.breadcrumb span{color:var(--white);font-weight:600;}
+.page-content{padding:20px 28px;flex:1;display:flex;flex-direction:column;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99;}.overlay.show{display:block;}
+.sb-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.lang-select{display:flex;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:5px;}
+.lang-btn{padding:8px 18px;border-radius:9px;border:none;font-size:0.86rem;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all 0.2s;background:transparent;color:var(--muted);}
+.lang-btn.active{background:linear-gradient(135deg,var(--blue),var(--accent));color:white;}
+.toolbar-right{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap;}
+.tb-action{display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--white);font-size:0.88rem;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all 0.2s;}
+.tb-action:hover{border-color:var(--blue);background:rgba(74,144,226,0.1);}
+.tb-run{background:linear-gradient(135deg,var(--blue),var(--accent));border:none;color:white;}
+.tb-run:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,144,226,0.45);}
+.editor-area{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0;}
+.editor-panel,.output-panel{background:#07111d;border:1px solid var(--border);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#0f1e2e;border-bottom:1px solid var(--border);}
+.panel-title{font-size:0.82rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.dot-r{width:11px;height:11px;border-radius:50%;background:#FF5F57;}
+.dot-y{width:11px;height:11px;border-radius:50%;background:#FEBC2E;}
+.dot-g{width:11px;height:11px;border-radius:50%;background:#28C840;}
+.line-count{font-size:0.75rem;color:var(--muted);}
+.code-editor{flex:1;padding:0;overflow:hidden;display:flex;position:relative;}
+.line-nums{padding:16px 0;background:#0a1520;min-width:44px;text-align:right;font-family:'Fira Code',monospace;font-size:0.84rem;line-height:1.9;color:#2a4a6a;user-select:none;border-right:1px solid rgba(74,144,226,0.12);overflow:hidden;}
+.line-num{padding:0 10px;}
+textarea#codeArea{flex:1;padding:16px 18px;background:transparent;border:none;color:#e8f4ff;font-family:'Fira Code',monospace;font-size:0.86rem;line-height:1.9;resize:none;outline:none;caret-color:var(--accent);tab-size:4;}
+textarea#codeArea::selection{background:rgba(74,144,226,0.35);}
+.output-body{flex:1;padding:16px 18px;overflow-y:auto;font-family:'Fira Code',monospace;font-size:0.86rem;line-height:1.85;}
+.out-line{margin-bottom:3px;}.out-success{color:#e8f4ff;}.out-error{color:var(--red);}.out-system{color:var(--muted);font-style:italic;}
+.error-helper{background:rgba(255,107,107,0.06);border:1px solid rgba(255,107,107,0.25);border-radius:18px;padding:22px 24px;margin-top:16px;display:none;animation:slideDown 0.3s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.eh-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.eh-title h3{font-size:1rem;font-weight:700;color:var(--red);}
+.eh-sections{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.eh-box{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.eh-box h4{font-size:0.82rem;font-weight:700;color:var(--blue-light);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+.eh-box p{font-size:0.83rem;color:var(--muted);line-height:1.65;}
+.eh-code{background:#07111d;border:1px solid var(--border);border-radius:9px;padding:12px 14px;font-family:'Fira Code',monospace;font-size:0.8rem;line-height:1.75;margin-top:8px;color:#e8f4ff;}
+.eh-encourage{margin-top:14px;padding:14px 18px;background:rgba(0,229,160,0.07);border:1px solid rgba(0,229,160,0.2);border-radius:12px;font-size:0.88rem;color:var(--green);display:flex;align-items:center;gap:10px;}
+.examples-strip{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.ex-btn{padding:7px 15px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:9px;font-size:0.8rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Sora',sans-serif;transition:all 0.2s;}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue-light);background:rgba(74,144,226,0.08);}
+@media(max-width:900px){.editor-area{grid-template-columns:1fr;}.eh-sections{grid-template-columns:1fr;}}
+@media(max-width:768px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.main{margin-left:0;}.menu-btn{display:block;}.page-content{padding:14px;}.topbar{padding:14px 16px;}}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sb-logo"><div class="sb-logo-ico">🐍</div><span class="sb-logo-txt">Py<span>Quest</span></span></a>
+  <nav class="sb-nav">
+    <div class="sb-section-lbl">Main</div>
+    <a href="studentdashboard.html" class="sb-item"><i class="fas fa-th-large"></i> Dashboard</a>
+    <a href="studenttutorial.html" class="sb-item"><i class="fas fa-book-open"></i> Tutorials</a>
+    <a href="studentsandbox.html" class="sb-item active"><i class="fas fa-terminal"></i> Sandbox</a>
+    <a href="gameindex.html" class="sb-item"><i class="fas fa-gamepad"></i> Games <span class="sb-badge">3</span></a>
+    <a href="studentquiz.html" class="sb-item"><i class="fas fa-brain"></i> Quiz</a>
+    <a href="studentprogress.html" class="sb-item"><i class="fas fa-chart-line"></i> Progress</a>
+    <div class="sb-section-lbl">Account</div>
+    <a href="#" class="sb-item"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  <div class="sb-bottom"><div class="sb-user"><div class="sb-avatar" id="sbAv">S</div><div class="sb-user-info"><div class="sb-user-name" id="sbNm">Student</div><div class="sb-user-role">Student</div></div><i class="fas fa-sign-out-alt sb-logout" onclick="logout()"></i></div></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="breadcrumb">PyQuest / <span>Sandbox</span></div>
+    </div>
+    <div style="font-size:0.82rem;color:var(--muted)"><i class="fas fa-info-circle"></i> Write code, click Run — errors are explained in beginner language!</div>
+  </div>
+  <div class="page-content">
+    <div class="sb-toolbar">
+      <div class="lang-select">
+        <button class="lang-btn active" id="btnPy" onclick="setLang('python')">🐍 Python</button>
+        <button class="lang-btn" id="btnJs" onclick="setLang('javascript')">⚡ JavaScript</button>
+      </div>
+      <div class="toolbar-right">
+        <button class="tb-action tb-run" onclick="runCode()"><i class="fas fa-play"></i> Run Code</button>
+        <button class="tb-action" onclick="resetCode()"><i class="fas fa-undo"></i> Reset</button>
+        <button class="tb-action" onclick="clearOutput()"><i class="fas fa-trash-alt"></i> Clear Output</button>
+      </div>
+    </div>
+    <div class="examples-strip">
+      <span style="font-size:0.8rem;color:var(--muted);align-self:center;">Try example:</span>
+      <button class="ex-btn" onclick="loadExample('hello')">👋 Hello World</button>
+      <button class="ex-btn" onclick="loadExample('loop')">🔁 For Loop</button>
+      <button class="ex-btn" onclick="loadExample('func')">⚙️ Function</button>
+      <button class="ex-btn" onclick="loadExample('list')">📋 List</button>
+      <button class="ex-btn" onclick="loadExample('err_syntax')">🐛 Syntax Error</button>
+      <button class="ex-btn" onclick="loadExample('err_name')">🐛 Name Error</button>
+    </div>
+    <div class="editor-area">
+      <div class="editor-panel">
+        <div class="panel-header">
+          <div style="display:flex;gap:6px"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div></div>
+          <div class="panel-title"><i class="fas fa-code"></i> <span id="editorLangLabel">main.py</span></div>
+          <div class="line-count" id="lineCount">1 line</div>
+        </div>
+        <div class="code-editor">
+          <div class="line-nums" id="lineNums"><div class="line-num">1</div></div>
+          <textarea id="codeArea" spellcheck="false" oninput="syncLines()" onkeydown="handleTab(event)" placeholder="# Write your Python code here..."></textarea>
+        </div>
+      </div>
+      <div class="output-panel">
+        <div class="panel-header">
+          <div style="display:flex;gap:6px"><div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div></div>
+          <div class="panel-title"><i class="fas fa-terminal"></i> Output</div>
+          <div id="runStatus" style="font-size:0.75rem;color:var(--muted)">Ready</div>
+        </div>
+        <div class="output-body" id="outputBody">
+          <div class="out-line out-system">// Output will appear here when you run your code...</div>
+          <div class="out-line out-system">// Click '▶ Run Code' to start!</div>
+        </div>
+      </div>
+    </div>
+    <div class="error-helper" id="errorHelper">
+      <div class="eh-title">
+        <div style="width:36px;height:36px;background:rgba(255,107,107,0.2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🐛</div>
+        <div><h3 id="ehType">Syntax Error</h3><p style="font-size:0.8rem;color:var(--muted)">Don't worry! Every coder makes these mistakes. Here's what happened:</p></div>
+      </div>
+      <div class="eh-sections">
+        <div class="eh-box"><h4>❌ What Went Wrong</h4><p id="ehWhat"></p></div>
+        <div class="eh-box"><h4>💡 Why It Happened</h4><p id="ehWhy"></p></div>
+        <div class="eh-box"><h4>✅ How to Fix It</h4><p id="ehFix"></p><div class="eh-code" id="ehFixed"></div></div>
+        <div class="eh-box"><h4>📚 Similar Example</h4><p id="ehExDesc"></p><div class="eh-code" id="ehExample"></div></div>
+      </div>
+      <div class="eh-encourage"><span>💪</span><span id="ehEncourage">You're learning! Mistakes are the best teachers. Fix the error and try again!</span></div>
+    </div>
+  </div>
+</div>
+<script>
+let currentLang = 'python';
+const DEFAULT_CODE = {
+  python:`# Welcome to PyQuest Sandbox! 🐍\n# Write your Python code here and click Run!\n\nname = "Coder"\nprint("Hello,", name)\nprint("Welcome to PyQuest!")\n\n# Try changing the name variable above!`,
+  javascript:`// Welcome to PyQuest Sandbox! ⚡\n// Write your JavaScript code here and click Run!\n\nlet name = "Coder";\nconsole.log("Hello, " + name);\nconsole.log("Welcome to PyQuest!");\n\n// Try changing the name variable above!`
+};
+const EXAMPLES = {
+  hello:{python:`# Hello World - the first program every coder writes!\nprint("Hello, World!")\nprint("I am learning Python!")\nprint("PyQuest makes it easy 🚀")`,javascript:`// Hello World\nconsole.log("Hello, World!");\nconsole.log("I am learning JavaScript!");\nconsole.log("PyQuest makes it easy 🚀");`},
+  loop:{python:`# For loop - repeat code multiple times\nprint("Counting from 1 to 5:")\nfor i in range(1, 6):\n    print("Count:", i)\n\nprint("\\nFruits I love:")\nfruits = ["apple", "mango", "banana"]\nfor fruit in fruits:\n    print("🍎", fruit)`,javascript:`// For loop\nconsole.log("Counting from 1 to 5:");\nfor (let i = 1; i <= 5; i++) {\n    console.log("Count: " + i);\n}\nconsole.log("\\nFruits I love:");\nlet fruits = ["apple", "mango", "banana"];\nfor (let fruit of fruits) {\n    console.log("🍎 " + fruit);\n}`},
+  func:{python:`# Functions - reusable blocks of code\ndef greet(name):\n    message = "Hello, " + name + "! Welcome to PyQuest!"\n    return message\n\ndef add(a, b):\n    return a + b\n\nprint(greet("Alice"))\nprint(greet("Bob"))\nprint("5 + 3 =", add(5, 3))`,javascript:`// Functions\nfunction greet(name) {\n    return "Hello, " + name + "! Welcome to PyQuest!";\n}\nfunction add(a, b) { return a + b; }\nconsole.log(greet("Alice"));\nconsole.log(greet("Bob"));\nconsole.log("5 + 3 = " + add(5, 3));`},
+  list:{python:`# Lists\nfruits = ["apple", "mango", "banana", "orange"]\nprint("All fruits:", fruits)\nprint("First fruit:", fruits[0])\nprint("Total fruits:", len(fruits))\nfruits.append("grape")\nprint("After adding grape:", fruits)\nfor fruit in fruits:\n    print(" -", fruit)`,javascript:`// Arrays\nlet fruits = ["apple", "mango", "banana", "orange"];\nconsole.log("All fruits: " + fruits);\nconsole.log("First fruit: " + fruits[0]);\nconsole.log("Total fruits: " + fruits.length);\nfruits.push("grape");\nconsole.log("After adding grape: " + fruits);\nfor (let fruit of fruits) { console.log(" - " + fruit); }`},
+  err_syntax:{python:`# ⚠️ This code has a syntax error!\nprint("Hello World"\nname = "Alice"\nprint(name)`,javascript:`// ⚠️ Syntax error!\nconsole.log("Hello World"\nlet name = "Alice";\nconsole.log(name);`},
+  err_name:{python:`# ⚠️ Name error!\nprint("My name is:", my_name)\nmy_name = "Alice"`,javascript:`// ⚠️ Name error!\nconsole.log("My name is: " + myName);\nlet myName = "Alice";`}
+};
+const ERROR_HELP = {
+  SyntaxError:{"missing closing":{what:"You opened a bracket ( or a quote, but didn't close it.",why:"Python needs every opening bracket '(' to have a matching closing bracket ')'. Same for quotes and square brackets [].",fix:"Add the missing closing bracket or quote.",fixed:'print("Hello World")  # ✅ Correct\nx = (5 + 3)          # ✅ Correct',exDesc:"Always match your brackets and quotes:",example:'print("Hello")\nresult = (10 + 5)\nmy_list = [1, 2, 3]'},"default":{what:"Your code has a mistake in its structure or punctuation.",why:"Python reads your code very carefully. Even a missing colon, bracket, or quote causes a Syntax Error.",fix:"Look at the error line carefully. Check for missing colons after if/for/def, unclosed brackets, or mismatched quotes.",fixed:"def greet():  # ✅ colon needed!\n    print('Hi')\n\nif x > 5:  # ✅ colon needed!",exDesc:"Common syntax rules to remember:",example:"for i in range(5):  # need colon\n    print(i)  # need indent"}},
+  NameError:{default:{what:"You used a variable name that Python doesn't know about yet.",why:"You must create (define) a variable before using it. Python reads code from top to bottom.",fix:"Make sure you define the variable BEFORE using it.",fixed:"name = 'Alice'  # ✅ define first\nprint(name)     # ✅ then use",exDesc:"Always define before using:",example:"x = 10        # define x first\nprint(x)      # then use x"}},
+  TypeError:{default:{what:"You tried to use an operation on the wrong type of data.",why:"Python has strict rules about types. You can't add a number to a text string directly.",fix:"Convert types using int(), str(), or float() to make them compatible.",fixed:'age = 20\nprint("Age: " + str(age))  # ✅ convert to string',exDesc:"Type conversion examples:",example:'num = 42\ntext = "The answer is "\nprint(text + str(num))'}},
+  IndentationError:{default:{what:"Your code indentation (spaces/tabs) is wrong.",why:"Python uses indentation to understand which code belongs to which block.",fix:"Use exactly 4 spaces for each level of indentation.",fixed:"def greet():          # level 0\n    print('Hello')    # level 1 = 4 spaces",exDesc:"Indentation levels:",example:"for i in range(3):\n    print(i)  # 4 spaces indent"}},
+  ZeroDivisionError:{default:{what:"You tried to divide a number by zero.",why:"In mathematics, dividing by zero is undefined.",fix:"Add a check to make sure the divisor is not zero before dividing.",fixed:"divisor = 5\nif divisor != 0:\n    result = 10 / divisor\n    print(result)",exDesc:"Safe division with a check:",example:"def divide(a, b):\n    if b == 0:\n        return 'Cannot divide by zero!'\n    return a / b"}}
+};
+function setLang(lang){
+  currentLang=lang;
+  document.getElementById('btnPy').classList.toggle('active',lang==='python');
+  document.getElementById('btnJs').classList.toggle('active',lang==='javascript');
+  document.getElementById('editorLangLabel').textContent=lang==='python'?'main.py':'main.js';
+  document.getElementById('codeArea').value=DEFAULT_CODE[lang];
+  syncLines();clearOutput();
+  document.getElementById('errorHelper').style.display='none';
+}
+function syncLines(){
+  const lines=document.getElementById('codeArea').value.split('\n');
+  document.getElementById('lineNums').innerHTML=lines.map((_,i)=>`<div class="line-num">${i+1}</div>`).join('');
+  document.getElementById('lineCount').textContent=lines.length+(lines.length===1?' line':' lines');
+}
+function handleTab(e){
+  if(e.key==='Tab'){e.preventDefault();const ta=document.getElementById('codeArea');const s=ta.selectionStart;ta.value=ta.value.substring(0,s)+'    '+ta.value.substring(ta.selectionEnd);ta.selectionStart=ta.selectionEnd=s+4;syncLines();}
+}
+function loadExample(name){
+  const code=EXAMPLES[name]?.[currentLang];
+  if(code){document.getElementById('codeArea').value=code;syncLines();clearOutput();document.getElementById('errorHelper').style.display='none';}
+}
+function clearOutput(){
+  document.getElementById('outputBody').innerHTML='<div class="out-line out-system">// Output cleared. Run your code to see results!</div>';
+  document.getElementById('runStatus').textContent='Ready';document.getElementById('runStatus').style.color='var(--muted)';
+}
+function resetCode(){document.getElementById('codeArea').value=DEFAULT_CODE[currentLang];syncLines();clearOutput();document.getElementById('errorHelper').style.display='none';}
+function runCode(){
+  const code=document.getElementById('codeArea').value.trim();
+  if(!code){addOutput('// Nothing to run! Write some code first.','out-system');return;}
+  clearOutput();
+  document.getElementById('runStatus').textContent='Running...';document.getElementById('runStatus').style.color='var(--yellow)';
+  document.getElementById('errorHelper').style.display='none';
+  if(currentLang==='python')runPython(code);else runJavaScript(code);
+}
+function runPython(code){
+  Sk.configure({output:(text)=>{addOutput(text.replace(/\n$/,''),'out-success');},read:(x)=>{if(Sk.builtinFiles===undefined||Sk.builtinFiles["files"][x]===undefined)throw "File not found: "+x;return Sk.builtinFiles["files"][x];},execLimit:5000});
+  Sk.misceval.asyncToPromise(()=>Sk.importMainWithBody("<stdin>",false,code,true))
+    .then(()=>{document.getElementById('runStatus').textContent='✅ Success';document.getElementById('runStatus').style.color='var(--green)';})
+    .catch((err)=>{const errStr=err.toString();document.getElementById('runStatus').textContent='❌ Error';document.getElementById('runStatus').style.color='var(--red)';addOutput('ERROR: '+errStr,'out-error');showErrorHelper(errStr,'python',code);});
+}
+function runJavaScript(code){
+  const logs=[];const fakeConsole={log:(...a)=>{logs.push(a.map(x=>typeof x==='object'?JSON.stringify(x):String(x)).join(' '));}};
+  try{const fn=new Function('console',code);fn(fakeConsole);logs.forEach(l=>addOutput(l,'out-success'));document.getElementById('runStatus').textContent='✅ Success';document.getElementById('runStatus').style.color='var(--green)';}
+  catch(e){document.getElementById('runStatus').textContent='❌ Error';document.getElementById('runStatus').style.color='var(--red)';addOutput('ERROR: '+e.message,'out-error');showErrorHelper(e.message,'javascript',code);}
+}
+function addOutput(text,cls){
+  const ob=document.getElementById('outputBody');const d=document.createElement('div');d.className='out-line '+(cls||'');d.textContent=text;ob.appendChild(d);ob.scrollTop=ob.scrollHeight;
+}
+function showErrorHelper(errMsg){
+  const helper=document.getElementById('errorHelper');helper.style.display='block';
+  let errType='SyntaxError';
+  if(/NameError|ReferenceError|is not defined/i.test(errMsg))errType='NameError';
+  else if(/TypeError/i.test(errMsg))errType='TypeError';
+  else if(/IndentationError/i.test(errMsg))errType='IndentationError';
+  else if(/ZeroDivisionError/i.test(errMsg))errType='ZeroDivisionError';
+  document.getElementById('ehType').textContent='🐛 '+errType+' Detected';
+  const errDB=ERROR_HELP[errType]||ERROR_HELP.SyntaxError;
+  let info=errDB.default;
+  if(errType==='SyntaxError'&&/EOF|closing|expected/i.test(errMsg))info=errDB["missing closing"]||errDB.default;
+  document.getElementById('ehWhat').textContent=info.what;
+  document.getElementById('ehWhy').textContent=info.why;
+  document.getElementById('ehFix').textContent=info.fix;
+  document.getElementById('ehFixed').textContent=info.fixed;
+  document.getElementById('ehExDesc').textContent=info.exDesc;
+  document.getElementById('ehExample').textContent=info.example;
+  const encouragements=['💪 Every error is a learning step! Fix it and you\'re stronger!','🌟 Great coders make mistakes too. You\'re doing amazing!','🚀 Debug it, fix it, run it — that\'s how pros work!','😊 Don\'t give up! Read the explanation above and try again.','🎯 You spotted an error! Now you know what to avoid next time.'];
+  document.getElementById('ehEncourage').textContent=encouragements[Math.floor(Math.random()*encouragements.length)];
+  setTimeout(()=>helper.scrollIntoView({behavior:'smooth',block:'start'}),200);
+}
+document.getElementById('codeArea').value=DEFAULT_CODE.python;
+syncLines();
+const u=JSON.parse(localStorage.getItem('pyquest_current_user')||'{}');
+if(u.firstName){document.getElementById('sbNm').textContent=u.firstName+' '+(u.lastName||'');document.getElementById('sbAv').textContent=u.firstName[0].toUpperCase();}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
+function logout(){localStorage.removeItem('pyquest_current_user');window.location.href='login.html';}
+</script>
+</body>
+</html>

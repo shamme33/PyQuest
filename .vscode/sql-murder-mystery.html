@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Murder Mystery</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 30px; font-size: 2.5em; text-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+        .game-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        .query-box {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: #000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            border-radius: 5px;
+            resize: none;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover { background: #00cc00; transform: scale(1.05); }
+        .results {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .results table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .results th, .results td {
+            border: 1px solid #00ff00;
+            padding: 8px;
+            text-align: left;
+        }
+        .results th { background: #003300; }
+        .evidence {
+            background: rgba(255, 200, 0, 0.1);
+            border-left: 4px solid #ffc800;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .clue { color: #ffc800; font-weight: bold; }
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            animation: pulse 1s infinite;
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            color: #ff6666;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
+        }
+        .hint { color: #aaa; font-size: 12px; margin-top: 10px; }
+        .status { font-size: 14px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 SQL MURDER MYSTERY</h1>
+        <p style="text-align: center; margin-bottom: 20px; font-size: 14px;">
+            A murder happened on <span class="clue">January 15, 2024</span>. Find the killer using SQL queries.
+        </p>
+        
+        <div class="game-wrapper">
+            <div class="panel">
+                <h2>📋 Case Details</h2>
+                <div class="evidence">
+                    <strong>Crime:</strong> Murder victim found in the city<br>
+                    <strong>Date:</strong> January 15, 2024<br>
+                    <strong>Location:</strong> Warehouse District<br>
+                    <strong>Weapon:</strong> Unknown
+                </div>
+                
+                <div class="evidence" style="margin-top: 15px;">
+                    <strong>Available Tables:</strong><br>
+                    • crimes (id, date, description, city)<br>
+                    • person (id, name, ssn, age, height, hair_color, eye_color)<br>
+                    • interview (person_id, transcript)<br>
+                    • drivers_license (person_id, plate_number, car_make)<br>
+                    • gym_checkin (person_id, check_in_date)<br>
+                    • bank_account (person_id, account_number, balance)
+                </div>
+                
+                <div class="evidence" style="margin-top: 15px; background: rgba(255, 100, 0, 0.1); border-left-color: #ff6400;">
+                    <strong>🔎 First Clue:</strong><br>
+                    Someone reported seeing a car with a red plate number at the warehouse.
+                </div>
+
+                <div class="hint">
+                    💡 Start by finding the crime report, then search for witnesses, then find suspects with red plates.
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>⌨️ Query Console</h2>
+                <div class="status">Solved: <span id="solved-count">0</span>/3 Objectives</div>
+                
+                <div class="query-box">
+                    <label>Enter SQL Query:</label><br><br>
+                    <textarea id="query-input" placeholder="SELECT * FROM crimes WHERE date='2024-01-15';"></textarea>
+                    <button onclick="executeQuery()">Execute Query</button>
+                </div>
+
+                <div class="results" id="results">Ready for input...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database setup
+        const crimes = [
+            { id: 1, date: '2024-01-15', description: 'Person killed in warehouse', city: 'Metropolis' },
+        ];
+
+        const persons = [
+            { id: 1, name: 'John Smith', ssn: '111-22-3333', age: 35, height: 180, hair_color: 'brown', eye_color: 'blue' },
+            { id: 2, name: 'Jane Doe', ssn: '222-33-4444', age: 28, height: 165, hair_color: 'red', eye_color: 'green' },
+            { id: 3, name: 'Bob Johnson', ssn: '333-44-5555', age: 45, height: 175, hair_color: 'black', eye_color: 'brown' },
+            { id: 4, name: 'Alice Williams', ssn: '444-55-6666', age: 32, height: 170, hair_color: 'blonde', eye_color: 'blue' },
+            { id: 5, name: 'Mike Brown', ssn: '555-66-7777', age: 50, height: 185, hair_color: 'gray', eye_color: 'brown' },
+            { id: 6, name: 'Sarah Davis', ssn: '666-77-8888', age: 29, height: 168, hair_color: 'red', eye_color: 'green' },
+        ];
+
+        const interviews = [
+            { person_id: 1, transcript: 'I saw a red car leaving the warehouse around 9 PM' },
+            { person_id: 2, transcript: 'I was at the gym that day. Never been to the warehouse.' },
+            { person_id: 3, transcript: 'The victim owed me money. I wanted to confront them.' },
+            { person_id: 4, transcript: 'I heard the victim was meeting someone near the warehouse.' },
+            { person_id: 5, transcript: 'I drive a blue car. The killer drives red.' },
+            { person_id: 6, transcript: 'Bob Johnson threatened the victim last week at the bank.' },
+        ];
+
+        const drivers_licenses = [
+            { person_id: 1, plate_number: 'ABC123', car_make: 'Honda' },
+            { person_id: 2, plate_number: 'XYZ789', car_make: 'Toyota' },
+            { person_id: 3, plate_number: 'RED001', car_make: 'Ford' },
+            { person_id: 4, plate_number: 'BLUE42', car_make: 'BMW' },
+            { person_id: 5, plate_number: 'GRAY88', car_make: 'Mercedes' },
+            { person_id: 6, plate_number: 'RED999', car_make: 'Nissan' },
+        ];
+
+        const gym_checkins = [
+            { person_id: 2, check_in_date: '2024-01-15' },
+            { person_id: 4, check_in_date: '2024-01-15' },
+            { person_id: 5, check_in_date: '2024-01-15' },
+        ];
+
+        const bank_accounts = [
+            { person_id: 1, account_number: '1001', balance: 5000 },
+            { person_id: 2, account_number: '1002', balance: 15000 },
+            { person_id: 3, account_number: '1003', balance: 200 },
+            { person_id: 4, account_number: '1004', balance: 50000 },
+            { person_id: 5, account_number: '1005', balance: 100000 },
+            { person_id: 6, account_number: '1006', balance: 8000 },
+        ];
+
+        let solvedObjectives = 0;
+
+        function executeQuery() {
+            const query = document.getElementById('query-input').value.trim().toLowerCase();
+            const resultsDiv = document.getElementById('results');
+            let result = '';
+
+            try {
+                if (query.includes('select') && query.includes('crimes')) {
+                    result = displayTable(crimes, 'Crimes Table');
+                    checkObjective('crimes');
+                } else if (query.includes('select') && query.includes('interview')) {
+                    result = displayTable(interviews, 'Interview Records');
+                    checkObjective('interview');
+                } else if (query.includes('select') && query.includes('drivers_license')) {
+                    result = displayTable(drivers_licenses, 'Drivers License');
+                } else if (query.includes('select') && query.includes('person')) {
+                    const filteredPersons = persons.filter(p => {
+                        if (query.includes("where") && query.includes("red")) {
+                            return drivers_licenses.some(dl => dl.person_id === p.id && dl.plate_number.includes('RED'));
+                        }
+                        return true;
+                    });
+                    result = displayTable(filteredPersons, 'Person Records');
+                } else if (query.includes('join') && query.includes('drivers_license') && query.includes('red')) {
+                    const suspects = persons.filter(p => 
+                        drivers_licenses.some(dl => dl.person_id === p.id && dl.plate_number.includes('RED'))
+                    );
+                    result = displayTable(suspects, 'Red Car Owners');
+                    checkObjective('red_cars');
+                } else if (query.includes('bob') || query.includes('person_id = 3')) {
+                    result = '<div class="success">🎯 KILLER FOUND: Bob Johnson (ID: 3)<br>Motive: Financial dispute. Weapon: Unknown. He paid with RED001 plate.</div>';
+                    checkObjective('killer_found');
+                } else if (query.includes('select')) {
+                    result = '<div style="color: #ff9999;">Query executed but no specific results matched.</div>';
+                } else {
+                    result = '<div class="error">Invalid query. Use SELECT statements.</div>';
+                }
+
+                resultsDiv.innerHTML = result;
+            } catch (e) {
+                resultsDiv.innerHTML = '<div class="error">Query Error: ' + e.message + '</div>';
+            }
+        }
+
+        function displayTable(data, title) {
+            if (!data || data.length === 0) return '<div class="error">No results found.</div>';
+            
+            const keys = Object.keys(data[0]);
+            let html = `<h4>${title}</h4><table><tr>`;
+            
+            keys.forEach(key => html += `<th>${key}</th>`);
+            html += '</tr>';
+            
+            data.forEach(row => {
+                html += '<tr>';
+                keys.forEach(key => html += `<td>${row[key]}</td>`);
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            return html;
+        }
+
+        function checkObjective(obj) {
+            const solvedSet = new Set(JSON.parse(localStorage.getItem('solved_objectives') || '[]'));
+            if (!solvedSet.has(obj)) {
+                solvedSet.add(obj);
+                localStorage.setItem('solved_objectives', JSON.stringify([...solvedSet]));
+                solvedObjectives = solvedSet.size;
+                document.getElementById('solved-count').textContent = Math.min(solvedObjectives, 3);
+                
+                if (solvedObjectives >= 3) {
+                    alert('🏆 CASE SOLVED! The killer is Bob Johnson!');
+                }
+            }
+        }
+
+        // Load progress
+        window.onload = () => {
+            const saved = JSON.parse(localStorage.getItem('solved_objectives') || '[]');
+            solvedObjectives = saved.length;
+            document.getElementById('solved-count').textContent = Math.min(solvedObjectives, 3);
+        };
+    </script>
+</body>
+</html>

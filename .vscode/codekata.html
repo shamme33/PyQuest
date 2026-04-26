@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeKata - Algorithm Challenges</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8c 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 10px; font-size: 2.3em; }
+        .subtitle { text-align: center; color: rgba(255, 255, 255, 0.7); margin-bottom: 30px; }
+        .wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #4a9eff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .panel h2 { color: #4a9eff; margin-bottom: 20px; font-size: 1.5em; }
+        .difficulty {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .difficulty.easy { background: #4a9d4a; color: #fff; }
+        .difficulty.medium { background: #d4a949; color: #000; }
+        .difficulty.hard { background: #d94949; color: #fff; }
+        .description {
+            background: rgba(74, 158, 255, 0.1);
+            border-left: 4px solid #4a9eff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .examples {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #4a9eff;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .example { margin-bottom: 15px; }
+        .example:last-child { margin-bottom: 0; }
+        .example strong { color: #4a9eff; }
+        .editor-section h3 { color: #4a9eff; margin-bottom: 10px; }
+        textarea {
+            width: 100%;
+            height: 250px;
+            background: #1a1a1a;
+            color: #4a9eff;
+            border: 2px solid #4a9eff;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border-radius: 5px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        textarea:focus { outline: none; box-shadow: 0 0 15px rgba(74, 158, 255, 0.5); }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        button {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #4a9eff 0%, #1e7cc9 100%);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(74, 158, 255, 0.4); }
+        button:active { transform: translateY(0); }
+        .output {
+            background: #1a1a1a;
+            border: 2px solid #4a9eff;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .output-line {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(74, 158, 255, 0.2);
+        }
+        .output-line:last-child { border-bottom: none; }
+        .success { color: #4a9d4a; }
+        .error { color: #d94949; }
+        .test { color: #d4a949; }
+        .progress {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .progress-item {
+            background: rgba(74, 158, 255, 0.1);
+            border: 1px solid #4a9eff;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .progress-item .label { font-size: 12px; color: rgba(255, 255, 255, 0.7); }
+        .progress-item .value { font-size: 20px; font-weight: bold; color: #4a9eff; margin-top: 5px; }
+        .kata-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .kata-item {
+            background: rgba(74, 158, 255, 0.1);
+            border: 1px solid #4a9eff;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .kata-item:hover { background: rgba(74, 158, 255, 0.2); }
+        .kata-item.active { background: rgba(74, 158, 255, 0.3); border-color: #fff; }
+        .kata-item.completed { opacity: 0.6; }
+        .kata-name { font-weight: bold; }
+        .kata-status { font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥋 CODEKATA</h1>
+        <p class="subtitle">Master algorithms through coding challenges</p>
+
+        <div class="wrapper">
+            <div class="panel">
+                <h2>📚 Challenges</h2>
+                <div class="progress">
+                    <div class="progress-item">
+                        <div class="label">COMPLETED</div>
+                        <div class="value" id="completed-count">0</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="label">TOTAL</div>
+                        <div class="value" id="total-count">5</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="label">RANK</div>
+                        <div class="value" id="rank">NOVICE</div>
+                    </div>
+                </div>
+
+                <div class="kata-list" id="kata-list"></div>
+            </div>
+
+            <div class="panel">
+                <h2 id="current-title">Challenge: Reverse String</h2>
+                
+                <div>
+                    <span class="difficulty easy" id="difficulty">Easy</span>
+                    <span style="float: right; font-size: 12px; color: rgba(255,255,255,0.6);" id="kata-id">Kata #1</span>
+                </div>
+
+                <div class="description" id="description"></div>
+
+                <div class="examples" id="examples"></div>
+
+                <div class="editor-section">
+                    <h3>Your Solution</h3>
+                    <textarea id="code-editor" placeholder="Write your solution here..."></textarea>
+                </div>
+
+                <div class="controls">
+                    <button onclick="runTests()">▶️ Run Tests</button>
+                    <button onclick="submit()">✓ Submit</button>
+                    <button onclick="reset()">↻ Reset</button>
+                </div>
+
+                <div class="output" id="output">
+                    <div class="output-line">Ready to code...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const katas = [
+            {
+                id: 1,
+                title: "Reverse String",
+                difficulty: "easy",
+                description: "Write a function that takes a string and returns it reversed.",
+                examples: [
+                    { input: '"hello"', output: '"olleh"' },
+                    { input: '"world"', output: '"dlrow"' },
+                    { input: '""', output: '""' }
+                ],
+                testCases: [
+                    { input: "hello", expected: "olleh" },
+                    { input: "world", expected: "dlrow" },
+                    { input: "", expected: "" },
+                    { input: "a", expected: "a" }
+                ],
+                template: `function reverseString(str) {
+    // Your code here
+    return str;
+}`
+            },
+            {
+                id: 2,
+                title: "Sum of Array",
+                difficulty: "easy",
+                description: "Create a function that returns the sum of all numbers in an array.",
+                examples: [
+                    { input: '[1, 2, 3, 4]', output: '10' },
+                    { input: '[0, -1, 5]', output: '4' }
+                ],
+                testCases: [
+                    { input: [1, 2, 3, 4], expected: 10 },
+                    { input: [0, -1, 5], expected: 4 },
+                    { input: [], expected: 0 }
+                ],
+                template: `function sumArray(arr) {
+    // Your code here
+    return 0;
+}`
+            },
+            {
+                id: 3,
+                title: "Fibonacci Sequence",
+                difficulty: "medium",
+                description: "Return the n-th number in the Fibonacci sequence. The first two numbers are 0 and 1.",
+                examples: [
+                    { input: '5', output: '3' },
+                    { input: '10', output: '34' }
+                ],
+                testCases: [
+                    { input: 5, expected: 3 },
+                    { input: 10, expected: 34 },
+                    { input: 0, expected: 0 },
+                    { input: 1, expected: 1 }
+                ],
+                template: `function fibonacci(n) {
+    // Your code here
+    return 0;
+}`
+            },
+            {
+                id: 4,
+                title: "Find Duplicates",
+                difficulty: "medium",
+                description: "Find all duplicate values in an array and return them in a new array.",
+                examples: [
+                    { input: '[1, 2, 2, 3, 3, 3]', output: '[2, 3]' },
+                    { input: '[1, 2, 3]', output: '[]' }
+                ],
+                testCases: [
+                    { input: [1, 2, 2, 3, 3, 3], expected: [2, 3] },
+                    { input: [1, 2, 3], expected: [] },
+                    { input: [5, 5, 5], expected: [5] }
+                ],
+                template: `function findDuplicates(arr) {
+    // Your code here
+    return [];
+}`
+            },
+            {
+                id: 5,
+                title: "Prime Number Checker",
+                difficulty: "hard",
+                description: "Create a function that checks if a number is prime.",
+                examples: [
+                    { input: '7', output: 'true' },
+                    { input: '10', output: 'false' }
+                ],
+                testCases: [
+                    { input: 7, expected: true },
+                    { input: 10, expected: false },
+                    { input: 2, expected: true },
+                    { input: 1, expected: false }
+                ],
+                template: `function isPrime(n) {
+    // Your code here
+    return false;
+}`
+            }
+        ];
+
+        let currentKataIndex = 0;
+        let completed = [];
+
+        function loadKata(index) {
+            currentKataIndex = index;
+            const kata = katas[index];
+            
+            document.getElementById('current-title').textContent = `Challenge: ${kata.title}`;
+            document.getElementById('kata-id').textContent = `Kata #${kata.id}`;
+            document.getElementById('difficulty').textContent = kata.difficulty.toUpperCase();
+            document.getElementById('difficulty').className = `difficulty ${kata.difficulty}`;
+            
+            document.getElementById('description').textContent = kata.description;
+            
+            let examplesHtml = '';
+            kata.examples.forEach((ex, i) => {
+                examplesHtml += `<div class="example"><strong>Example ${i + 1}:</strong><br>Input: ${ex.input}<br>Output: ${ex.output}</div>`;
+            });
+            document.getElementById('examples').innerHTML = examplesHtml;
+            
+            document.getElementById('code-editor').value = kata.template;
+            document.getElementById('output').innerHTML = '<div class="output-line">Ready to test...</div>';
+            
+            updateKataList();
+        }
+
+        function updateKataList() {
+            let listHtml = '';
+            katas.forEach((kata, i) => {
+                const isCompleted = completed.includes(i);
+                const isActive = i === currentKataIndex;
+                listHtml += `<div class="kata-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" onclick="loadKata(${i})">
+                    <div>
+                        <div class="kata-name">${kata.title}</div>
+                        <div class="kata-status">${kata.difficulty}</div>
+                    </div>
+                    <div>${isCompleted ? '✓' : ''}</div>
+                </div>`;
+            });
+            document.getElementById('kata-list').innerHTML = listHtml;
+            
+            updateProgress();
+        }
+
+        function updateProgress() {
+            document.getElementById('completed-count').textContent = completed.length;
+            document.getElementById('total-count').textContent = katas.length;
+            
+            const percentage = (completed.length / katas.length) * 100;
+            let rank = 'NOVICE';
+            if (percentage >= 100) rank = 'MASTER';
+            else if (percentage >= 60) rank = 'EXPERT';
+            else if (percentage >= 40) rank = 'ADVANCED';
+            else if (percentage >= 20) rank = 'INTERMEDIATE';
+            
+            document.getElementById('rank').textContent = rank;
+        }
+
+        function runTests() {
+            const kata = katas[currentKataIndex];
+            const code = document.getElementById('code-editor').value;
+            const outputDiv = document.getElementById('output');
+            let output = '';
+
+            try {
+                const func = eval(`(${code})`);
+                let allPassed = true;
+
+                kata.testCases.forEach((test, i) => {
+                    try {
+                        const result = func(test.input);
+                        const passed = JSON.stringify(result) === JSON.stringify(test.expected);
+                        
+                        if (passed) {
+                            output += `<div class="output-line success">✓ Test ${i + 1} passed</div>`;
+                        } else {
+                            output += `<div class="output-line error">✗ Test ${i + 1} failed<br>&nbsp;&nbsp;Input: ${JSON.stringify(test.input)}<br>&nbsp;&nbsp;Expected: ${JSON.stringify(test.expected)}<br>&nbsp;&nbsp;Got: ${JSON.stringify(result)}</div>`;
+                            allPassed = false;
+                        }
+                    } catch (e) {
+                        output += `<div class="output-line error">✗ Test ${i + 1} error: ${e.message}</div>`;
+                        allPassed = false;
+                    }
+                });
+
+                if (allPassed) {
+                    output += `<div class="output-line success">🎉 ALL TESTS PASSED!</div>`;
+                }
+
+                outputDiv.innerHTML = output;
+            } catch (e) {
+                outputDiv.innerHTML = `<div class="output-line error">Syntax Error: ${e.message}</div>`;
+            }
+        }
+
+        function submit() {
+            const kata = katas[currentKataIndex];
+            const code = document.getElementById('code-editor').value;
+            const outputDiv = document.getElementById('output');
+
+            try {
+                const func = eval(`(${code})`);
+                let allPassed = true;
+
+                for (let test of kata.testCases) {
+                    const result = func(test.input);
+                    if (JSON.stringify(result) !== JSON.stringify(test.expected)) {
+                        allPassed = false;
+                        break;
+                    }
+                }
+
+                if (allPassed) {
+                    if (!completed.includes(currentKataIndex)) {
+                        completed.push(currentKataIndex);
+                        updateProgress();
+                    }
+                    outputDiv.innerHTML = `<div class="output-line success">🏆 Kata Completed! Moving to next...</div>`;
+                    setTimeout(() => {
+                        if (currentKataIndex < katas.length - 1) {
+                            loadKata(currentKataIndex + 1);
+                        }
+                    }, 1500);
+                } else {
+                    outputDiv.innerHTML = `<div class="output-line error">❌ Not all tests pass. Use 'Run Tests' to debug.</div>`;
+                }
+            } catch (e) {
+                outputDiv.innerHTML = `<div class="output-line error">Error: ${e.message}</div>`;
+            }
+        }
+
+        function reset() {
+            const kata = katas[currentKataIndex];
+            document.getElementById('code-editor').value = kata.template;
+            document.getElementById('output').innerHTML = '<div class="output-line">Ready to test...</div>';
+        }
+
+        // Initialize
+        loadKata(0);
+    </script>
+</body>
+</html>

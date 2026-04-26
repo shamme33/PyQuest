@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard - PyQuest</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* ===== ROOT VARIABLES ===== */
+:root{
+  --navy:#0D1B2A;--navy-2:#162336;--navy-3:#1E2D42;--navy-4:#243650;
+  --blue:#4A90E2;--blue-light:#6BAEFF;--accent:#00C8FF;
+  --green:#00E5A0;--yellow:#FFB800;--red:#FF6B6B;--purple:#9B59B6;
+  --white:#FFFFFF;--white-soft:#EEF4FF;--muted:#8EA8C3;
+  --border:rgba(74,144,226,0.2);--card:rgba(22,35,54,0.92);
+  --sidebar-w:265px;
+}
+/* ===== RESET ===== */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Sora',sans-serif;background:var(--navy);color:var(--white);display:flex;min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--navy);}
+::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px;}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  width:var(--sidebar-w);min-height:100vh;
+  background:rgba(10,17,27,0.99);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;z-index:200;
+  transition:transform 0.3s ease;
+}
+.sb-logo{
+  padding:22px 20px 18px;
+  display:flex;align-items:center;gap:11px;
+  border-bottom:1px solid var(--border);
+  text-decoration:none;
+}
+.sb-logo-ico{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--blue),var(--accent));
+  border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:1.05rem;color:white;flex-shrink:0;
+}
+.sb-logo-txt{font-size:1.25rem;font-weight:800;color:var(--white);}
+.sb-logo-txt span{background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sb-role-badge{
+  margin:12px 16px;
+  padding:7px 14px;
+  background:rgba(155,89,182,0.12);
+  border:1px solid rgba(155,89,182,0.3);
+  border-radius:9px;
+  font-size:0.76rem;font-weight:700;
+  color:#c084fc;
+  display:flex;align-items:center;gap:7px;
+}
+.sb-nav{flex:1;padding:8px 12px;overflow-y:auto;}
+.sb-lbl{
+  font-size:0.67rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.6px;
+  padding:10px 12px 6px;margin-top:4px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;border-radius:12px;
+  text-decoration:none;color:var(--muted);
+  font-size:0.87rem;font-weight:500;
+  transition:all 0.2s;margin-bottom:2px;
+  cursor:pointer;border:1px solid transparent;
+  background:none;width:100%;text-align:left;
+  font-family:'Sora',sans-serif;
+  position:relative;
+}
+.sb-item:hover{background:rgba(74,144,226,0.1);color:var(--white);}
+.sb-item.active{
+  background:linear-gradient(135deg,rgba(74,144,226,0.2),rgba(0,200,255,0.07));
+  color:var(--white);border-color:rgba(74,144,226,0.28);
+}
+.sb-item.active::before{
+  content:'';position:absolute;left:0;top:22%;bottom:22%;
+  width:3px;background:linear-gradient(180deg,var(--blue),var(--accent));
+  border-radius:0 3px 3px 0;
+}
+.sb-item i{width:19px;text-align:center;font-size:0.92rem;}
+.sb-notif{
+  margin-left:auto;background:var(--red);color:white;
+  font-size:0.64rem;font-weight:700;padding:2px 7px;border-radius:50px;
+}
+.sb-bottom{padding:12px;border-top:1px solid var(--border);}
+.sb-user{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:12px;cursor:pointer;
+  transition:background 0.2s;
+}
+.sb-user:hover{background:rgba(255,255,255,0.04);}
+.sb-av{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:0.95rem;flex-shrink:0;
+}
+.sb-ui{flex:1;min-width:0;}
+.sb-un{font-size:0.84rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-ur{font-size:0.71rem;color:var(--muted);}
+.sb-out{color:var(--muted);font-size:0.8rem;cursor:pointer;transition:color 0.2s;padding:4px;}
+.sb-out:hover{color:var(--red);}
+
+/* ===== MAIN ===== */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  padding:15px 30px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(13,27,42,0.97);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+}
+.tb-left{display:flex;align-items:center;gap:14px;}
+.menu-btn{
+  background:none;border:none;color:var(--muted);
+  cursor:pointer;font-size:1.1rem;padding:6px;display:none;
+}
+.breadcrumb{font-size:0.84rem;color:var(--muted);}
+.breadcrumb span{color:var(--white);font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-btn{
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  color:var(--muted);padding:8px 14px;border-radius:10px;
+  cursor:pointer;font-size:0.84rem;font-family:'Sora',sans-serif;
+  transition:all 0.2s;display:flex;align-items:center;gap:7px;
+}
+.tb-btn:hover{color:var(--white);border-color:var(--blue);}
+.tb-btn.teacher-tag{
+  background:rgba(155,89,182,0.12);border-color:rgba(155,89,182,0.3);
+  color:#c084fc;font-weight:700;
+}
+.notif-wrap{position:relative;}
+.notif-dot{
+  position:absolute;top:5px;right:9px;
+  width:7px;height:7px;background:var(--red);
+  border-radius:50%;border:2px solid var(--navy-2);
+}
+
+/* ===== PAGE CONTENT ===== */
+.page-content{padding:26px 30px;flex:1;}
+
+/* ===== SECTIONS ===== */
+.section{display:none;}
+.section.active{display:block;}
+
+/* ===== WELCOME HEADER ===== */
+.welcome-hdr{margin-bottom:24px;}
+.welcome-hdr h1{font-size:1.7rem;font-weight:800;margin-bottom:5px;}
+.welcome-hdr h1 span{background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.welcome-hdr p{color:var(--muted);font-size:0.9rem;}
+
+/* ===== STAT CARDS ===== */
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px;}
+.s-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:17px;padding:20px 18px;
+  transition:all 0.3s;cursor:default;
+  animation:fadeUp 0.5s ease both;
+}
+.s-card:hover{transform:translateY(-4px);border-color:var(--blue);box-shadow:0 12px 36px rgba(74,144,226,0.16);}
+.s-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;}
+.s-ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.s-badge{font-size:0.7rem;font-weight:700;padding:3px 9px;border-radius:50px;}
+.up{background:rgba(0,229,160,0.15);color:var(--green);}
+.neutral{background:rgba(74,144,226,0.15);color:var(--blue-light);}
+.s-num{font-size:1.9rem;font-weight:800;line-height:1;margin-bottom:4px;}
+.s-lbl{font-size:0.79rem;color:var(--muted);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== GRID LAYOUTS ===== */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;}
+
+/* ===== CARD BASE ===== */
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.card-title{font-size:0.97rem;font-weight:700;display:flex;align-items:center;gap:9px;}
+.card-title i{color:var(--blue);}
+.card-link{font-size:0.81rem;color:var(--blue-light);cursor:pointer;text-decoration:none;transition:color 0.2s;background:none;border:none;font-family:'Sora',sans-serif;}
+.card-link:hover{color:var(--accent);}
+
+/* ===== SECTION TITLE ===== */
+.sec-page-title{font-size:1.5rem;font-weight:800;margin-bottom:6px;}
+.sec-page-sub{color:var(--muted);font-size:0.88rem;margin-bottom:22px;}
+
+/* ===========================
+   DASHBOARD — CHARTS
+=========================== */
+.chart-canvas{max-height:210px;}
+
+/* Quick stats row */
+.quick-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.qs-item{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:13px;padding:15px;text-align:center;
+}
+.qs-item h3{font-size:1.5rem;font-weight:800;line-height:1;margin-bottom:4px;}
+.qs-item p{font-size:0.77rem;color:var(--muted);}
+
+/* Recent activity list */
+.act-list{display:flex;flex-direction:column;gap:9px;}
+.act-item{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 13px;background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);border-radius:12px;
+}
+.act-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;}
+.act-info{flex:1;}
+.act-info h5{font-size:0.83rem;font-weight:600;margin-bottom:2px;}
+.act-info p{font-size:0.74rem;color:var(--muted);}
+.act-time{font-size:0.72rem;color:var(--muted);}
+
+/* ===========================
+   MY CLASSES
+=========================== */
+.classes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
+.class-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;overflow:hidden;
+  transition:all 0.3s;
+}
+.class-card:hover{transform:translateY(-5px);border-color:var(--blue);box-shadow:0 14px 40px rgba(74,144,226,0.18);}
+.class-banner{height:7px;background:linear-gradient(90deg,var(--blue),var(--accent));}
+.class-banner.green{background:linear-gradient(90deg,var(--green),var(--accent));}
+.class-banner.yellow{background:linear-gradient(90deg,var(--yellow),var(--red));}
+.class-banner.purple{background:linear-gradient(90deg,var(--purple),var(--blue));}
+.class-body{padding:22px;}
+.class-top{display:flex;align-items:center;gap:12px;margin-bottom:15px;}
+.class-ico{
+  width:46px;height:46px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;flex-shrink:0;
+}
+.class-info h3{font-size:1rem;font-weight:700;margin-bottom:4px;}
+.class-info p{font-size:0.78rem;color:var(--muted);}
+.class-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.cs-item{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:10px;padding:11px;text-align:center;
+}
+.cs-item h4{font-size:1.1rem;font-weight:800;margin-bottom:3px;}
+.cs-item p{font-size:0.72rem;color:var(--muted);}
+.class-prog{margin-bottom:15px;}
+.class-prog-top{display:flex;justify-content:space-between;font-size:0.79rem;color:var(--muted);margin-bottom:6px;}
+.class-prog-bar{height:5px;background:var(--navy-3);border-radius:50px;overflow:hidden;}
+.class-prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:50px;}
+.btn-view{
+  width:100%;padding:11px;
+  background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.3);
+  color:var(--blue-light);border-radius:11px;
+  font-size:0.85rem;font-weight:700;cursor:pointer;
+  font-family:'Sora',sans-serif;transition:all 0.25s;
+}
+.btn-view:hover{background:var(--blue);color:white;border-color:var(--blue);}
+
+/* Class Detail Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  z-index:1000;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+  padding:20px;
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{
+  background:var(--navy-2);border:1px solid var(--border);
+  border-radius:22px;width:100%;max-width:680px;
+  max-height:85vh;overflow-y:auto;
+  transform:scale(0.95) translateY(20px);
+  transition:transform 0.3s;
+}
+.modal-overlay.open .modal{transform:scale(1) translateY(0);}
+.modal-header{
+  padding:22px 26px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--navy-2);z-index:1;
+}
+.modal-header h3{font-size:1.1rem;font-weight:800;}
+.modal-close{
+  background:rgba(255,255,255,0.06);border:none;color:var(--muted);
+  width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:0.9rem;
+  transition:all 0.2s;
+}
+.modal-close:hover{background:rgba(255,107,107,0.15);color:var(--red);}
+.modal-body{padding:22px 26px;}
+
+/* ===========================
+   STUDENT PROGRESS TABLE
+=========================== */
+.filter-bar{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:18px;flex-wrap:wrap;
+}
+.filter-search{
+  display:flex;align-items:center;gap:9px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:11px;padding:9px 16px;flex:1;min-width:200px;
+}
+.filter-search input{
+  background:none;border:none;color:var(--white);
+  font-size:0.87rem;outline:none;width:100%;
+  font-family:'Sora',sans-serif;
+}
+.filter-search input::placeholder{color:var(--muted);}
+.filter-search i{color:var(--muted);}
+.filter-select{
+  background:var(--card);border:1px solid var(--border);
+  color:var(--white);padding:9px 14px;border-radius:11px;
+  font-size:0.85rem;outline:none;cursor:pointer;
+  font-family:'Sora',sans-serif;
+}
+.filter-select option{background:var(--navy-2);}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{
+  padding:12px 16px;text-align:left;
+  font-size:0.76rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.8px;
+  background:rgba(255,255,255,0.02);
+  border-bottom:1px solid var(--border);
+}
+tbody tr{border-bottom:1px solid rgba(74,144,226,0.08);transition:background 0.15s;}
+tbody tr:hover{background:rgba(74,144,226,0.05);}
+tbody tr:last-child{border-bottom:none;}
+tbody td{padding:13px 16px;font-size:0.85rem;vertical-align:middle;}
+.td-student{display:flex;align-items:center;gap:10px;}
+.td-av{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:0.85rem;flex-shrink:0;
+}
+.td-name{font-weight:600;}
+.td-email{font-size:0.74rem;color:var(--muted);}
+.prog-mini{display:flex;align-items:center;gap:8px;}
+.prog-bar-sm{width:60px;height:5px;background:var(--navy-3);border-radius:50px;overflow:hidden;}
+.prog-fill-sm{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--blue),var(--accent));}
+.prog-pct{font-size:0.78rem;font-weight:600;}
+.score-badge{
+  padding:4px 11px;border-radius:50px;
+  font-size:0.76rem;font-weight:700;
+}
+.score-high{background:rgba(0,229,160,0.15);color:var(--green);}
+.score-mid{background:rgba(255,184,0,0.15);color:var(--yellow);}
+.score-low{background:rgba(255,107,107,0.15);color:var(--red);}
+.weak-tag{
+  padding:3px 10px;background:rgba(255,184,0,0.1);
+  border:1px solid rgba(255,184,0,0.25);
+  color:var(--yellow);border-radius:50px;font-size:0.74rem;
+}
+.status-dot{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:0.78rem;
+}
+.dot{width:7px;height:7px;border-radius:50%;}
+.dot-green{background:var(--green);}
+.dot-yellow{background:var(--yellow);}
+.dot-muted{background:var(--muted);}
+.pagination{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:16px;margin-top:4px;
+  border-top:1px solid var(--border);
+}
+.pag-info{font-size:0.82rem;color:var(--muted);}
+.pag-btns{display:flex;gap:6px;}
+.pag-btn{
+  padding:7px 14px;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);border-radius:9px;
+  color:var(--muted);font-size:0.82rem;cursor:pointer;
+  font-family:'Sora',sans-serif;transition:all 0.2s;
+}
+.pag-btn:hover,.pag-btn.active{border-color:var(--blue);color:var(--white);background:rgba(74,144,226,0.12);}
+
+/* ===========================
+   ERROR ANALYTICS
+=========================== */
+.err-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.err-list{display:flex;flex-direction:column;gap:10px;}
+.err-item{
+  display:flex;align-items:center;gap:13px;
+  padding:14px 16px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:13px;transition:all 0.2s;
+}
+.err-item:hover{border-color:var(--red);}
+.err-rank{
+  width:30px;height:30px;border-radius:8px;
+  background:rgba(255,107,107,0.15);color:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.82rem;font-weight:800;flex-shrink:0;
+}
+.err-detail{flex:1;}
+.err-detail h4{font-size:0.87rem;font-weight:700;margin-bottom:3px;}
+.err-detail p{font-size:0.76rem;color:var(--muted);}
+.err-count{font-size:0.8rem;font-weight:700;color:var(--red);}
+.err-prog{width:100%;background:var(--navy-3);border-radius:50px;height:4px;margin-top:6px;overflow:hidden;}
+.err-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--red),#FF9500);}
+
+/* Heatmap */
+.heatmap-grid{display:flex;flex-direction:column;gap:6px;}
+.hm-row{display:flex;align-items:center;gap:8px;}
+.hm-label{font-size:0.76rem;color:var(--muted);min-width:95px;}
+.hm-cells{display:flex;gap:5px;}
+.hm-cell{
+  width:28px;height:28px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.68rem;font-weight:700;
+  cursor:default;transition:transform 0.15s;
+  position:relative;
+}
+.hm-cell:hover{transform:scale(1.2);z-index:10;}
+.hm-cell[data-tip]:hover::after{
+  content:attr(data-tip);
+  position:absolute;bottom:110%;left:50%;transform:translateX(-50%);
+  background:var(--navy-3);border:1px solid var(--border);
+  color:var(--white);font-size:0.72rem;padding:4px 9px;border-radius:7px;
+  white-space:nowrap;z-index:100;
+}
+.h0{background:rgba(255,107,107,0.05);}
+.h1{background:rgba(255,107,107,0.18);}
+.h2{background:rgba(255,107,107,0.32);}
+.h3{background:rgba(255,107,107,0.50);}
+.h4{background:rgba(255,107,107,0.72);}
+
+/* ===========================
+   QUIZ RESULTS
+=========================== */
+.quiz-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.qo-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:15px;padding:18px;text-align:center;
+}
+.qo-ico{font-size:1.6rem;margin-bottom:8px;}
+.qo-num{
+  font-size:2rem;font-weight:800;line-height:1;margin-bottom:4px;
+  background:linear-gradient(135deg,var(--blue),var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.qo-lbl{font-size:0.78rem;color:var(--muted);}
+
+.topic-scores{display:flex;flex-direction:column;gap:10px;}
+.ts-row{display:flex;align-items:center;gap:12px;}
+.ts-topic{font-size:0.84rem;font-weight:600;min-width:100px;}
+.ts-bar-wrap{flex:1;display:flex;align-items:center;gap:10px;}
+.ts-bar{flex:1;height:8px;background:var(--navy-3);border-radius:50px;overflow:hidden;}
+.ts-fill{height:100%;border-radius:50px;transition:width 0.8s ease;}
+.ts-val{font-size:0.78rem;font-weight:700;min-width:36px;text-align:right;}
+
+/* Top performers */
+.top-list{display:flex;flex-direction:column;gap:10px;}
+.top-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:12px;transition:all 0.2s;
+}
+.top-item:hover{border-color:var(--blue);}
+.top-rank{
+  width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.8rem;font-weight:800;flex-shrink:0;
+}
+.rank-1{background:rgba(255,184,0,0.2);color:var(--yellow);}
+.rank-2{background:rgba(192,192,192,0.15);color:#C0C0C0;}
+.rank-3{background:rgba(205,127,50,0.15);color:#CD7F32;}
+.rank-n{background:rgba(255,255,255,0.06);color:var(--muted);}
+.top-av{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:0.82rem;flex-shrink:0;
+}
+.top-info{flex:1;}
+.top-info h5{font-size:0.84rem;font-weight:700;margin-bottom:2px;}
+.top-info p{font-size:0.74rem;color:var(--muted);}
+.top-score{font-size:0.95rem;font-weight:800;color:var(--green);}
+
+/* ===========================
+   NOTICE BOARD
+=========================== */
+.notice-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;gap:12px;flex-wrap:wrap;
+}
+.btn-add-notice{
+  display:flex;align-items:center;gap:8px;
+  padding:11px 22px;
+  background:linear-gradient(135deg,var(--blue),var(--accent));
+  border:none;border-radius:12px;color:white;
+  font-size:0.9rem;font-weight:700;cursor:pointer;
+  font-family:'Sora',sans-serif;transition:all 0.3s;
+}
+.btn-add-notice:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,144,226,0.42);}
+
+.notices-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.notice-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:17px;overflow:hidden;
+  transition:all 0.3s;
+}
+.notice-card:hover{border-color:var(--blue);transform:translateY(-3px);}
+.notice-top-bar{height:4px;}
+.notice-body{padding:20px;}
+.notice-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px;}
+.notice-badge{
+  padding:4px 12px;border-radius:50px;
+  font-size:0.72rem;font-weight:700;
+  white-space:nowrap;
+}
+.nb-announce{background:rgba(74,144,226,0.15);color:var(--blue-light);}
+.nb-important{background:rgba(255,107,107,0.15);color:var(--red);}
+.nb-reminder{background:rgba(255,184,0,0.15);color:var(--yellow);}
+.nb-general{background:rgba(0,229,160,0.15);color:var(--green);}
+.notice-actions{display:flex;gap:6px;flex-shrink:0;}
+.notice-btn{
+  width:28px;height:28px;border-radius:7px;border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:0.75rem;transition:all 0.2s;
+}
+.notice-edit{background:rgba(74,144,226,0.12);color:var(--blue-light);}
+.notice-edit:hover{background:var(--blue);color:white;}
+.notice-del{background:rgba(255,107,107,0.1);color:var(--red);}
+.notice-del:hover{background:var(--red);color:white;}
+.notice-title{font-size:0.97rem;font-weight:700;margin-bottom:8px;line-height:1.4;}
+.notice-text{font-size:0.84rem;color:var(--muted);line-height:1.65;margin-bottom:14px;}
+.notice-footer{display:flex;align-items:center;justify-content:space-between;}
+.notice-date{font-size:0.75rem;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.notice-class{
+  font-size:0.73rem;padding:3px 10px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);border-radius:50px;color:var(--muted);
+}
+
+/* Notice Form */
+.notice-form{
+  background:var(--navy-3);border:1px solid var(--border);
+  border-radius:16px;padding:24px;margin-bottom:22px;
+  display:none;
+  animation:slideDown 0.3s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.notice-form.show{display:block;}
+.nf-title{font-size:0.95rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.nf-title i{color:var(--blue);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:7px;color:var(--white);}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:11px 14px;
+  background:rgba(255,255,255,0.04);
+  border:1.5px solid var(--border);
+  border-radius:10px;color:var(--white);
+  font-size:0.88rem;font-family:'Sora',sans-serif;
+  outline:none;transition:all 0.25s;
+}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--muted);}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:var(--blue);background:rgba(74,144,226,0.07);
+  box-shadow:0 0 0 3px rgba(74,144,226,0.12);
+}
+.form-select{cursor:pointer;}
+.form-select option{background:var(--navy-2);}
+.form-textarea{resize:vertical;min-height:90px;line-height:1.6;}
+.nf-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+.btn-save{
+  padding:10px 24px;
+  background:linear-gradient(135deg,var(--blue),var(--accent));
+  border:none;border-radius:10px;color:white;
+  font-size:0.88rem;font-weight:700;cursor:pointer;
+  font-family:'Sora',sans-serif;transition:all 0.3s;
+}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(74,144,226,0.4);}
+.btn-cancel{
+  padding:10px 22px;background:transparent;
+  border:1.5px solid var(--border);border-radius:10px;
+  color:var(--muted);font-size:0.88rem;font-weight:600;
+  cursor:pointer;font-family:'Sora',sans-serif;transition:all 0.2s;
+}
+.btn-cancel:hover{border-color:var(--red);color:var(--red);}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:26px;right:26px;
+  background:var(--navy-2);border:1px solid var(--green);
+  color:var(--green);padding:14px 20px;
+  border-radius:13px;font-size:0.88rem;font-weight:600;
+  display:flex;align-items:center;gap:9px;
+  transform:translateY(100px);opacity:0;
+  transition:all 0.4s ease;z-index:9999;
+  pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.err{border-color:var(--red);color:var(--red);}
+
+/* ===== OVERLAY (mobile) ===== */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:150;}
+.overlay.show{display:block;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1200px){
+  .stat-row{grid-template-columns:repeat(3,1fr);}
+  .quiz-overview{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:1000px){
+  .grid-2,.grid-3,.err-grid{grid-template-columns:1fr;}
+  .classes-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .menu-btn{display:flex !important;}
+  .page-content{padding:16px 14px;}
+  .topbar{padding:13px 15px;}
+  .stat-row{grid-template-columns:1fr 1fr;}
+  .classes-grid{grid-template-columns:1fr;}
+  .quiz-overview{grid-template-columns:1fr 1fr;}
+  .form-row{grid-template-columns:1fr;}
+  .tb-btn.teacher-tag .tag-txt{display:none;}
+}
+@media(max-width:480px){
+  .stat-row{grid-template-columns:1fr;}
+  .quiz-overview{grid-template-columns:1fr;}
+  .notices-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================================================
+     SIDEBAR
+================================================ -->
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sb-logo">
+    <div class="sb-logo-ico">🐍</div>
+    <span class="sb-logo-txt">Py<span>Quest</span></span>
+  </a>
+  <div class="sb-role-badge"><i class="fas fa-chalkboard-teacher"></i> Teacher Panel</div>
+
+  <nav class="sb-nav">
+    <div class="sb-lbl">Main</div>
+    <button class="sb-item active" onclick="showSection('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</button>
+    <button class="sb-item" onclick="showSection('classes',this)"><i class="fas fa-layer-group"></i> My Classes</button>
+    <button class="sb-item" onclick="showSection('students',this)"><i class="fas fa-users"></i> Student Progress</button>
+    <button class="sb-item" onclick="showSection('quizresults',this)"><i class="fas fa-brain"></i> Quiz Results</button>
+    <button class="sb-item" onclick="showSection('errors',this)"><i class="fas fa-bug"></i> Error Analytics</button>
+    <button class="sb-item" onclick="showSection('notices',this)"><i class="fas fa-bullhorn"></i> Notice Board <span class="sb-notif" id="notifCount">3</span></button>
+    <div class="sb-lbl">Account</div>
+    <button class="sb-item" onclick="showSection('dashboard',this)"><i class="fas fa-user-circle"></i> My Profile</button>
+    <button class="sb-item" onclick="showSection('dashboard',this)"><i class="fas fa-cog"></i> Settings</button>
+  </nav>
+
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-av" id="sbAv">T</div>
+      <div class="sb-ui">
+        <div class="sb-un" id="sbName">Teacher</div>
+        <div class="sb-ur">Instructor</div>
+      </div>
+      <i class="fas fa-sign-out-alt sb-out" onclick="logout()" title="Logout"></i>
+    </div>
+  </div>
+</aside>
+
+<!-- ================================================
+     MAIN
+================================================ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-left">
+      <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()" style="display:none">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="breadcrumb">PyQuest / <span id="bcText">Dashboard</span></div>
+    </div>
+    <div class="tb-right">
+      <button class="tb-btn teacher-tag"><i class="fas fa-chalkboard-teacher"></i> <span class="tag-txt">Teacher Mode</span></button>
+      <button class="tb-btn" onclick="showSection('notices',document.querySelector('.sb-item:nth-child(7)'))">
+        <i class="fas fa-bell"></i> Notices
+      </button>
+      <a href="student-dashboard.html" class="tb-btn" style="text-decoration:none;color:var(--muted)">
+        <i class="fas fa-external-link-alt"></i> Student View
+      </a>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ============================================
+         SECTION: DASHBOARD
+    ============================================ -->
+    <div class="section active" id="sec-dashboard">
+      <div class="welcome-hdr">
+        <h1>Welcome back, <span id="welcomeName">Teacher</span>! 👋</h1>
+        <p id="welcomeSub">Here's an overview of your classes and student performance today.</p>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-row">
+        <div class="s-card" style="animation-delay:0.05s">
+          <div class="s-top"><div class="s-ico" style="background:rgba(74,144,226,0.18)">👨‍🎓</div><span class="s-badge up">+4 this week</span></div>
+          <div class="s-num">124</div><div class="s-lbl">Total Students</div>
+        </div>
+        <div class="s-card" style="animation-delay:0.1s">
+          <div class="s-top"><div class="s-ico" style="background:rgba(0,229,160,0.18)">📈</div><span class="s-badge up">+6%</span></div>
+          <div class="s-num">68%</div><div class="s-lbl">Average Progress</div>
+        </div>
+        <div class="s-card" style="animation-delay:0.15s">
+          <div class="s-top"><div class="s-ico" style="background:rgba(255,107,107,0.18)">🐛</div><span class="s-badge neutral">This week</span></div>
+          <div class="s-num">47</div><div class="s-lbl">Common Mistakes</div>
+        </div>
+        <div class="s-card" style="animation-delay:0.2s">
+          <div class="s-top"><div class="s-ico" style="background:rgba(255,184,0,0.18)">⚡</div><span class="s-badge up">Today</span></div>
+          <div class="s-num">89</div><div class="s-lbl">Active Students</div>
+        </div>
+        <div class="s-card" style="animation-delay:0.25s">
+          <div class="s-top"><div class="s-ico" style="background:rgba(155,89,182,0.18)">🧠</div><span class="s-badge up">+23 today</span></div>
+          <div class="s-num">342</div><div class="s-lbl">Quiz Attempts</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="fas fa-chart-line"></i> Student Activity (This Week)</div>
+          </div>
+          <canvas id="dashActivityChart" class="chart-canvas"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="fas fa-chart-pie"></i> Progress by Language</div>
+          </div>
+          <canvas id="dashLangChart" class="chart-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Quick Stats + Recent Activity -->
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="fas fa-history"></i> Recent Activity</div>
+            <button class="card-link" onclick="showSection('students',document.querySelectorAll('.sb-item')[2])">View All</button>
+          </div>
+          <div class="act-list">
+            <div class="act-item"><div class="act-ico" style="background:rgba(0,229,160,0.15)">✅</div><div class="act-info"><h5>Riya Sharma completed Python — Functions</h5><p>Python Fundamentals · Scored 90%</p></div><span class="act-time">5m ago</span></div>
+            <div class="act-item"><div class="act-ico" style="background:rgba(255,107,107,0.15)">🐛</div><div class="act-info"><h5>Ahmed Hassan got SyntaxError × 3</h5><p>Sandbox — Python</p></div><span class="act-time">18m ago</span></div>
+            <div class="act-item"><div class="act-ico" style="background:rgba(74,144,226,0.15)">🧠</div><div class="act-info"><h5>Sofia Rahman took Loops Quiz — 7/10</h5><p>JavaScript Basics · 70% accuracy</p></div><span class="act-time">32m ago</span></div>
+            <div class="act-item"><div class="act-ico" style="background:rgba(255,184,0,0.15)">📚</div><div class="act-info"><h5>Karim Ali started OOP Basics</h5><p>Advanced Python</p></div><span class="act-time">1h ago</span></div>
+            <div class="act-item"><div class="act-ico" style="background:rgba(155,89,182,0.15)">🎮</div><div class="act-info"><h5>Priya Singh played Code Snake — Level 5</h5><p>Games · 480 pts</p></div><span class="act-time">2h ago</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="fas fa-bolt"></i> Quick Stats</div></div>
+          <div class="quick-stats">
+            <div class="qs-item"><h3 style="color:var(--green)">92%</h3><p>Completion Rate</p></div>
+            <div class="qs-item"><h3 style="color:var(--blue-light)">74%</h3><p>Avg Quiz Score</p></div>
+            <div class="qs-item"><h3 style="color:var(--yellow)">4</h3><p>Active Classes</p></div>
+          </div>
+          <div style="margin-top:14px">
+            <canvas id="dashQuickChart" style="max-height:140px"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         SECTION: MY CLASSES
+    ============================================ -->
+    <div class="section" id="sec-classes">
+      <h2 class="sec-page-title">My Classes</h2>
+      <p class="sec-page-sub">Manage your courses and track class-level progress.</p>
+
+      <div class="classes-grid">
+        <!-- Python Fundamentals -->
+        <div class="class-card">
+          <div class="class-banner"></div>
+          <div class="class-body">
+            <div class="class-top">
+              <div class="class-ico" style="background:rgba(74,144,226,0.15)">🐍</div>
+              <div class="class-info"><h3>Python Fundamentals</h3><p>Beginner level · Active</p></div>
+            </div>
+            <div class="class-stats">
+              <div class="cs-item"><h4 style="color:var(--blue-light)">38</h4><p>Students</p></div>
+              <div class="cs-item"><h4 style="color:var(--green)">72%</h4><p>Avg Progress</p></div>
+            </div>
+            <div class="class-prog">
+              <div class="class-prog-top"><span>Course completion</span><span>72%</span></div>
+              <div class="class-prog-bar"><div class="class-prog-fill" style="width:72%"></div></div>
+            </div>
+            <button class="btn-view" onclick="openClassDetail('python-fundamentals')">View Class Details</button>
+          </div>
+        </div>
+        <!-- Advanced Python -->
+        <div class="class-card">
+          <div class="class-banner green"></div>
+          <div class="class-body">
+            <div class="class-top">
+              <div class="class-ico" style="background:rgba(0,229,160,0.15)">⚙️</div>
+              <div class="class-info"><h3>Advanced Python</h3><p>Intermediate level · Active</p></div>
+            </div>
+            <div class="class-stats">
+              <div class="cs-item"><h4 style="color:var(--green)">24</h4><p>Students</p></div>
+              <div class="cs-item"><h4 style="color:var(--green)">85%</h4><p>Avg Progress</p></div>
+            </div>
+            <div class="class-prog">
+              <div class="class-prog-top"><span>Course completion</span><span>85%</span></div>
+              <div class="class-prog-bar"><div class="class-prog-fill" style="width:85%"></div></div>
+            </div>
+            <button class="btn-view" onclick="openClassDetail('advanced-python')">View Class Details</button>
+          </div>
+        </div>
+        <!-- JavaScript Basics -->
+        <div class="class-card">
+          <div class="class-banner yellow"></div>
+          <div class="class-body">
+            <div class="class-top">
+              <div class="class-ico" style="background:rgba(255,184,0,0.15)">⚡</div>
+              <div class="class-info"><h3>JavaScript Basics</h3><p>Beginner level · Active</p></div>
+            </div>
+            <div class="class-stats">
+              <div class="cs-item"><h4 style="color:var(--yellow)">31</h4><p>Students</p></div>
+              <div class="cs-item"><h4 style="color:var(--yellow)">58%</h4><p>Avg Progress</p></div>
+            </div>
+            <div class="class-prog">
+              <div class="class-prog-top"><span>Course completion</span><span>58%</span></div>
+              <div class="class-prog-bar"><div class="class-prog-fill" style="width:58%;background:linear-gradient(90deg,var(--yellow),#FF9500)"></div></div>
+            </div>
+            <button class="btn-view" onclick="openClassDetail('javascript-basics')">View Class Details</button>
+          </div>
+        </div>
+        <!-- HTML/CSS -->
+        <div class="class-card">
+          <div class="class-banner purple"></div>
+          <div class="class-body">
+            <div class="class-top">
+              <div class="class-ico" style="background:rgba(155,89,182,0.15)">🌐</div>
+              <div class="class-info"><h3>HTML / CSS</h3><p>Beginner level · Active</p></div>
+            </div>
+            <div class="class-stats">
+              <div class="cs-item"><h4 style="color:#c084fc">31</h4><p>Students</p></div>
+              <div class="cs-item"><h4 style="color:#c084fc">64%</h4><p>Avg Progress</p></div>
+            </div>
+            <div class="class-prog">
+              <div class="class-prog-top"><span>Course completion</span><span>64%</span></div>
+              <div class="class-prog-bar"><div class="class-prog-fill" style="width:64%;background:linear-gradient(90deg,var(--purple),var(--blue))"></div></div>
+            </div>
+            <button class="btn-view" onclick="openClassDetail('html-css')">View Class Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         SECTION: STUDENT PROGRESS
+    ============================================ -->
+    <div class="section" id="sec-students">
+      <h2 class="sec-page-title">Student Progress</h2>
+      <p class="sec-page-sub">Monitor individual student performance, quiz scores, and weak areas.</p>
+
+      <div class="card">
+        <div class="filter-bar">
+          <div class="filter-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="studentSearch" placeholder="Search by name or email..." oninput="filterStudents()">
+          </div>
+          <select class="filter-select" id="classFilter" onchange="filterStudents()">
+            <option value="">All Classes</option>
+            <option>Python Fundamentals</option>
+            <option>Advanced Python</option>
+            <option>JavaScript Basics</option>
+            <option>HTML / CSS</option>
+          </select>
+          <select class="filter-select" id="statusFilter" onchange="filterStudents()">
+            <option value="">All Status</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table id="studentTable">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Completed Topics</th>
+                <th>Quiz Score</th>
+                <th>Weak Area</th>
+                <th>Activity</th>
+              </tr>
+            </thead>
+            <tbody id="studentTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <div class="pag-info" id="pagInfo">Showing 1-10 of 24 students</div>
+          <div class="pag-btns">
+            <button class="pag-btn active">1</button>
+            <button class="pag-btn">2</button>
+            <button class="pag-btn">3</button>
+            <button class="pag-btn">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         SECTION: QUIZ RESULTS
+    ============================================ -->
+    <div class="section" id="sec-quizresults">
+      <h2 class="sec-page-title">Quiz Results</h2>
+      <p class="sec-page-sub">Overview of all quiz attempts, scores, and top performers across your classes.</p>
+
+      <!-- Overview Numbers -->
+      <div class="quiz-overview">
+        <div class="qo-card"><div class="qo-ico">👩‍🎓</div><div class="qo-num">98</div><div class="qo-lbl">Students Attended</div></div>
+        <div class="qo-card"><div class="qo-ico">🔁</div><div class="qo-num">342</div><div class="qo-lbl">Total Attempts</div></div>
+        <div class="qo-card"><div class="qo-ico">🎯</div><div class="qo-num">74%</div><div class="qo-lbl">Average Score</div></div>
+        <div class="qo-card"><div class="qo-ico">⭐</div><div class="qo-num">18</div><div class="qo-lbl">Perfect Scores</div></div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Topic Scores -->
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="fas fa-chart-bar"></i> Average Score by Topic</div></div>
+          <canvas id="topicScoreChart" style="max-height:220px;margin-bottom:18px"></canvas>
+          <div class="topic-scores" id="topicScoreList"></div>
+        </div>
+        <!-- Top Performers -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="fas fa-trophy"></i> Top Performers</div>
+            <button class="card-link" onclick="showSection('students',document.querySelectorAll('.sb-item')[2])">All Students →</button>
+          </div>
+          <div class="top-list" id="topPerformersList"></div>
+        </div>
+      </div>
+
+      <!-- Quiz Attempts Chart -->
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-chart-line"></i> Quiz Attempts Over Time</div></div>
+        <canvas id="attemptsChart" style="max-height:200px"></canvas>
+      </div>
+    </div>
+
+    <!-- ============================================
+         SECTION: ERROR ANALYTICS
+    ============================================ -->
+    <div class="section" id="sec-errors">
+      <h2 class="sec-page-title">Error Analytics</h2>
+      <p class="sec-page-sub">Identify the most common coding mistakes your students are making in the sandbox.</p>
+
+      <div class="err-grid">
+        <!-- Top Errors List -->
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="fas fa-exclamation-triangle"></i> Most Common Errors</div></div>
+          <div class="err-list" id="errList"></div>
+        </div>
+        <!-- Error Chart -->
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="fas fa-chart-pie"></i> Error Distribution</div></div>
+          <canvas id="errPieChart" style="max-height:240px;margin-bottom:16px"></canvas>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center" id="errLegend"></div>
+        </div>
+      </div>
+
+      <!-- Error Heatmap -->
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-fire"></i> Error Frequency Heatmap (By Topic × Day)</div></div>
+        <div style="overflow-x:auto">
+          <div style="min-width:480px">
+            <div style="display:flex;gap:8px;margin-bottom:8px;padding-left:103px">
+              <span style="font-size:0.72rem;color:var(--muted);min-width:28px;text-align:center" v-for="d in days">Mon</span>
+              <span style="font-size:0.72rem;color:var(--muted);min-width:28px;text-align:center">Mon</span>
+              <span style="font-size:0.72rem;color:var(--muted);min-width:28px;text-align:center">Tue</span>
+              <span style="font-size:0.72rem;color:var(--muted);min-width:28px;text-align:center">Wed</span>
+              <span style="font-size:0.72rem;color:var(--muted);min-width:28px;text-align:center">Thu</span>
+              <span style="font-size:0.72rem;color:var(--muted);min-width:28px;text-align:center">Fri</span>
+              <span style="font-size:0.72rem;color:var(--muted);min-width:28px;text-align:center">Sat</span>
+              <span style="font-size:0.72rem;color:var(--muted);min-width:28px;text-align:center">Sun</span>
+            </div>
+            <div class="heatmap-grid" id="heatmapGrid"></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:0.76rem;color:var(--muted)">
+          <span>Less</span>
+          <div class="hm-cell h0" style="width:18px;height:18px;border-radius:4px"></div>
+          <div class="hm-cell h1" style="width:18px;height:18px;border-radius:4px"></div>
+          <div class="hm-cell h2" style="width:18px;height:18px;border-radius:4px"></div>
+          <div class="hm-cell h3" style="width:18px;height:18px;border-radius:4px"></div>
+          <div class="hm-cell h4" style="width:18px;height:18px;border-radius:4px"></div>
+          <span>More</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         SECTION: NOTICE BOARD
+    ============================================ -->
+    <div class="section" id="sec-notices">
+      <div class="notice-toolbar">
+        <div>
+          <h2 class="sec-page-title" style="margin-bottom:4px">Notice Board</h2>
+          <p class="sec-page-sub" style="margin-bottom:0">Post announcements, reminders, and updates for your students.</p>
+        </div>
+        <button class="btn-add-notice" onclick="toggleNoticeForm()"><i class="fas fa-plus"></i> Create Notice</button>
+      </div>
+
+      <!-- Notice Form -->
+      <div class="notice-form" id="noticeForm">
+        <div class="nf-title"><i class="fas fa-edit"></i> <span id="nfTitle">Create New Notice</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Notice Title *</label>
+            <input type="text" class="form-input" id="nTitle" placeholder="e.g. Assignment Due Friday">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select class="form-select" id="nCategory">
+              <option value="Announcement">📢 Announcement</option>
+              <option value="Important">⚠️ Important</option>
+              <option value="Reminder">🔔 Reminder</option>
+              <option value="General">💬 General</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Target Class</label>
+            <select class="form-select" id="nClass">
+              <option value="All Classes">All Classes</option>
+              <option>Python Fundamentals</option>
+              <option>Advanced Python</option>
+              <option>JavaScript Basics</option>
+              <option>HTML / CSS</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select class="form-select" id="nPriority">
+              <option>Normal</option>
+              <option>High</option>
+              <option>Urgent</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notice Content *</label>
+          <textarea class="form-textarea" id="nContent" placeholder="Write your notice here..."></textarea>
+        </div>
+        <div class="nf-btns">
+          <button class="btn-cancel" onclick="cancelNoticeForm()">Cancel</button>
+          <button class="btn-save" onclick="saveNotice()"><i class="fas fa-save"></i> <span id="saveBtnTxt">Post Notice</span></button>
+        </div>
+        <input type="hidden" id="editingNoticeId" value="">
+      </div>
+
+      <!-- Notices List -->
+      <div class="notices-grid" id="noticesGrid"></div>
+    </div>
+
+  </div><!-- end page-content -->
+</div><!-- end main -->
+
+<!-- ================================================
+     CLASS DETAIL MODAL
+================================================ -->
+<div class="modal-overlay" id="classModal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Class Details</h3>
+      <button class="modal-close" onclick="closeModal(null,true)"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg">Done!</span></div>
+
+<!-- ================================================
+     JAVASCRIPT
+================================================ -->
+<script>
+/* =========================================
+   DATA
+========================================= */
+const STUDENTS = [
+  {id:1,name:'Riya Sharma',email:'riya@email.com',class:'Python Fundamentals',topics:14,quizScore:90,weakArea:'OOP',status:'Active',color:'linear-gradient(135deg,#4A90E2,#00C8FF)'},
+  {id:2,name:'Ahmed Hassan',email:'ahmed@email.com',class:'Python Fundamentals',topics:9,quizScore:68,weakArea:'Loops',status:'Active',color:'linear-gradient(135deg,#00E5A0,#4A90E2)'},
+  {id:3,name:'Sofia Rahman',email:'sofia@email.com',class:'JavaScript Basics',topics:7,quizScore:72,weakArea:'Async',status:'Active',color:'linear-gradient(135deg,#FFB800,#FF6B6B)'},
+  {id:4,name:'Karim Ali',email:'karim@email.com',class:'Advanced Python',topics:18,quizScore:95,weakArea:'None',status:'Active',color:'linear-gradient(135deg,#9B59B6,#4A90E2)'},
+  {id:5,name:'Priya Singh',email:'priya@email.com',class:'HTML / CSS',topics:11,quizScore:78,weakArea:'Flexbox',status:'Active',color:'linear-gradient(135deg,#FF6B6B,#FFB800)'},
+  {id:6,name:'Omar Farhan',email:'omar@email.com',class:'Python Fundamentals',topics:5,quizScore:54,weakArea:'Functions',status:'Inactive',color:'linear-gradient(135deg,#00C8FF,#9B59B6)'},
+  {id:7,name:'Nadia Islam',email:'nadia@email.com',class:'JavaScript Basics',topics:10,quizScore:83,weakArea:'Scope',status:'Active',color:'linear-gradient(135deg,#00E5A0,#FFB800)'},
+  {id:8,name:'Tariq Hossain',email:'tariq@email.com',class:'Advanced Python',topics:16,quizScore:88,weakArea:'Decorators',status:'Active',color:'linear-gradient(135deg,#4A90E2,#FF6B6B)'},
+  {id:9,name:'Layla Malik',email:'layla@email.com',class:'HTML / CSS',topics:8,quizScore:65,weakArea:'Grid',status:'Active',color:'linear-gradient(135deg,#FFB800,#9B59B6)'},
+  {id:10,name:'Zaid Chowdhury',email:'zaid@email.com',class:'Python Fundamentals',topics:12,quizScore:76,weakArea:'Conditions',status:'Inactive',color:'linear-gradient(135deg,#00C8FF,#00E5A0)'},
+  {id:11,name:'Malia Chen',email:'malia@email.com',class:'JavaScript Basics',topics:6,quizScore:60,weakArea:'DOM',status:'Active',color:'linear-gradient(135deg,#FF6B6B,#4A90E2)'},
+  {id:12,name:'Bilal Rana',email:'bilal@email.com',class:'Advanced Python',topics:19,quizScore:97,weakArea:'None',status:'Active',color:'linear-gradient(135deg,#9B59B6,#00C8FF)'},
+];
+
+const NOTICES_DEFAULT = [
+  {id:1,title:'Python Assignment Due This Friday',category:'Important',targetClass:'Python Fundamentals',content:'Reminder: Your Python loops assignment is due this Friday at 11:59 PM. Submit via the portal. Late submissions will receive a 10% deduction. Reach out if you have questions!',date:'2025-01-20',priority:'High'},
+  {id:2,title:'New JavaScript Module Released',category:'Announcement',targetClass:'JavaScript Basics',content:'Great news! The new Async/Await module is now live in the Tutorials section. This covers Promises, async functions, and real API calls. Watch the video first, then try the sandbox exercises.',date:'2025-01-19',priority:'Normal'},
+  {id:3,title:'Weekly Quiz — Every Monday',category:'Reminder',targetClass:'All Classes',content:'Don\'t forget: we have a short quiz every Monday to track your progress. It takes only 10 minutes. Your scores help me identify where you need more support. See you Monday!',date:'2025-01-18',priority:'Normal'},
+];
+
+let notices = JSON.parse(localStorage.getItem('pq_notices') || JSON.stringify(NOTICES_DEFAULT));
+
+/* =========================================
+   INIT
+========================================= */
+function init(){
+  // Load teacher user
+  const u = JSON.parse(localStorage.getItem('pyquest_current_user')||'{}');
+  const name = u.firstName || 'Teacher';
+  document.getElementById('welcomeName').textContent = name;
+  document.getElementById('sbName').textContent = (u.firstName||'') + ' ' + (u.lastName||'');
+  document.getElementById('sbAv').textContent = name[0].toUpperCase();
+  document.getElementById('welcomeSub').textContent =
+    `Here's an overview of your classes and student activity — ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}.`;
+
+  renderStudentTable(STUDENTS);
+  renderTopPerformers();
+  renderTopicScores();
+  renderErrorList();
+  renderHeatmap();
+  renderNotices();
+  initCharts();
+  setupMobileMenu();
+}
+
+/* =========================================
+   NAVIGATION
+========================================= */
+function showSection(id, btn){
+  // Hide all sections
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  // Update sidebar active
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  // Breadcrumb
+  const names = {dashboard:'Dashboard','classes':'My Classes',students:'Student Progress',quizresults:'Quiz Results',errors:'Error Analytics',notices:'Notice Board'};
+  document.getElementById('bcText').textContent = names[id]||id;
+  // Close mobile sidebar
+  closeSidebar();
+  // Init charts if needed
+  if(id==='quizresults') setTimeout(initQuizCharts,100);
+  if(id==='errors') setTimeout(initErrorCharts,100);
+}
+
+/* =========================================
+   MOBILE SIDEBAR
+========================================= */
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+function setupMobileMenu(){
+  const btn = document.getElementById('menuBtn');
+  if(window.innerWidth<=768) btn.style.display='flex';
+  window.addEventListener('resize',()=>{
+    btn.style.display = window.innerWidth<=768?'flex':'none';
+    if(window.innerWidth>768) closeSidebar();
+  });
+}
+
+/* =========================================
+   STUDENT TABLE
+========================================= */
+function renderStudentTable(data){
+  const tbody = document.getElementById('studentTableBody');
+  if(!data.length){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">No students found</td></tr>`;return;}
+  tbody.innerHTML = data.map(s=>{
+    const sc = s.quizScore>=80?'high':s.quizScore>=60?'mid':'low';
+    const dot = s.status==='Active'?'dot-green':'dot-muted';
+    const topics_pct = Math.round((s.topics/19)*100);
+    return `
+    <tr>
+      <td>
+        <div class="td-student">
+          <div class="td-av" style="background:${s.color}">${s.name[0]}</div>
+          <div><div class="td-name">${s.name}</div><div class="td-email">${s.email}</div></div>
+        </div>
+      </td>
+      <td style="font-size:0.82rem;color:var(--muted)">${s.class}</td>
+      <td>
+        <div class="prog-mini">
+          <div class="prog-bar-sm"><div class="prog-fill-sm" style="width:${topics_pct}%"></div></div>
+          <span class="prog-pct" style="color:${topics_pct>70?'var(--green)':topics_pct>40?'var(--blue-light)':'var(--yellow)'}">${s.topics}/19</span>
+        </div>
+      </td>
+      <td><span class="score-badge score-${sc}">${s.quizScore}%</span></td>
+      <td>${s.weakArea!=='None'?`<span class="weak-tag">${s.weakArea}</span>`:'<span style="color:var(--green);font-size:0.8rem">✅ None</span>'}</td>
+      <td>
+        <div class="status-dot">
+          <div class="dot ${dot}"></div>
+          <span style="color:${s.status==='Active'?'var(--green)':'var(--muted)'}">${s.status}</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pagInfo').textContent = `Showing 1-${data.length} of ${data.length} students`;
+}
+
+function filterStudents(){
+  const q = document.getElementById('studentSearch').value.toLowerCase();
+  const cls = document.getElementById('classFilter').value;
+  const st = document.getElementById('statusFilter').value;
+  const filtered = STUDENTS.filter(s=>{
+    const matchQ = s.name.toLowerCase().includes(q)||s.email.toLowerCase().includes(q);
+    const matchC = !cls || s.class===cls;
+    const matchS = !st || s.status===st;
+    return matchQ&&matchC&&matchS;
+  });
+  renderStudentTable(filtered);
+}
+
+/* =========================================
+   QUIZ RESULTS
+========================================= */
+function renderTopPerformers(){
+  const top = [...STUDENTS].sort((a,b)=>b.quizScore-a.quizScore).slice(0,6);
+  document.getElementById('topPerformersList').innerHTML = top.map((s,i)=>{
+    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n';
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+    return `
+    <div class="top-item">
+      <div class="top-rank ${rankClass}">${medal}</div>
+      <div class="top-av" style="background:${s.color}">${s.name[0]}</div>
+      <div class="top-info"><h5>${s.name}</h5><p>${s.class}</p></div>
+      <div class="top-score">${s.quizScore}%</div>
+    </div>`;
+  }).join('');
+}
+
+const TOPIC_SCORES = [
+  {topic:'Variables',avg:85,color:'#4A90E2'},
+  {topic:'Conditions',avg:74,color:'#00C8FF'},
+  {topic:'Loops',avg:68,color:'#00E5A0'},
+  {topic:'Functions',avg:71,color:'#FFB800'},
+  {topic:'Lists',avg:79,color:'#9B59B6'},
+  {topic:'Operators',avg:88,color:'#FF6B6B'},
+];
+function renderTopicScores(){
+  document.getElementById('topicScoreList').innerHTML = TOPIC_SCORES.map(t=>`
+    <div class="ts-row">
+      <div class="ts-topic">${t.topic}</div>
+      <div class="ts-bar-wrap">
+        <div class="ts-bar"><div class="ts-fill" style="width:${t.avg}%;background:${t.color}"></div></div>
+        <div class="ts-val" style="color:${t.color}">${t.avg}%</div>
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================
+   ERROR ANALYTICS
+========================================= */
+const ERRORS = [
+  {type:'SyntaxError',desc:'Missing closing bracket or colon',count:87,pct:100},
+  {type:'NameError',desc:'Variable used before definition',count:63,pct:72},
+  {type:'IndentationError',desc:'Wrong or inconsistent indentation',count:54,pct:62},
+  {type:'TypeError',desc:'Wrong data type in operation',count:41,pct:47},
+  {type:'ZeroDivisionError',desc:'Dividing by zero',count:28,pct:32},
+  {type:'IndexError',desc:'List index out of range',count:19,pct:22},
+];
+function renderErrorList(){
+  document.getElementById('errList').innerHTML = ERRORS.map((e,i)=>`
+    <div class="err-item">
+      <div class="err-rank">${i+1}</div>
+      <div class="err-detail">
+        <h4>${e.type}</h4>
+        <p>${e.desc}</p>
+        <div class="err-prog"><div class="err-fill" style="width:${e.pct}%"></div></div>
+      </div>
+      <div class="err-count">${e.count}×</div>
+    </div>`).join('');
+}
+
+const HEATMAP_DATA = {
+  'Variables':    [1,2,1,3,2,0,0],
+  'Loops':        [3,4,2,4,3,1,0],
+  'Functions':    [2,3,3,4,2,1,0],
+  'Conditions':   [1,2,2,3,1,0,0],
+  'OOP':          [2,4,3,4,4,2,1],
+  'File Handling':[1,1,2,3,2,0,0],
+};
+function renderHeatmap(){
+  const grid = document.getElementById('heatmapGrid');
+  grid.innerHTML = Object.entries(HEATMAP_DATA).map(([topic,vals])=>`
+    <div class="hm-row">
+      <div class="hm-label">${topic}</div>
+      <div class="hm-cells">
+        ${vals.map((v,i)=>`<div class="hm-cell h${v}" data-tip="${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}: ${v*12} errors">${v>0?v:''}</div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================
+   NOTICE BOARD
+========================================= */
+const CAT_COLORS = {Announcement:'nb-announce',Important:'nb-important',Reminder:'nb-reminder',General:'nb-general'};
+const BANNER_COLORS = {Announcement:'linear-gradient(90deg,#4A90E2,#00C8FF)',Important:'linear-gradient(90deg,#FF6B6B,#FFB800)',Reminder:'linear-gradient(90deg,#FFB800,#FF9500)',General:'linear-gradient(90deg,#00E5A0,#4A90E2)'};
+
+function renderNotices(){
+  const grid = document.getElementById('noticesGrid');
+  document.getElementById('notifCount').textContent = notices.length;
+  if(!notices.length){
+    grid.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1"><i class="fas fa-bullhorn" style="font-size:2rem;margin-bottom:12px;display:block;opacity:0.3"></i>No notices yet. Create your first notice!</div>`;
+    return;
+  }
+  grid.innerHTML = notices.map(n=>`
+    <div class="notice-card">
+      <div class="notice-top-bar" style="background:${BANNER_COLORS[n.category]||BANNER_COLORS.General}"></div>
+      <div class="notice-body">
+        <div class="notice-header">
+          <span class="notice-badge ${CAT_COLORS[n.category]||'nb-general'}">${n.category}</span>
+          <div class="notice-actions">
+            <button class="notice-btn notice-edit" onclick="editNotice(${n.id})" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="notice-btn notice-del" onclick="deleteNotice(${n.id})" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        <div class="notice-title">${n.title}</div>
+        <div class="notice-text">${n.content}</div>
+        <div class="notice-footer">
+          <span class="notice-date"><i class="fas fa-calendar-alt"></i>${n.date}</span>
+          <span class="notice-class">${n.targetClass}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleNoticeForm(){
+  const f = document.getElementById('noticeForm');
+  const isOpen = f.classList.contains('show');
+  if(isOpen){cancelNoticeForm();}
+  else{
+    f.classList.add('show');
+    document.getElementById('nfTitle').textContent='Create New Notice';
+    document.getElementById('saveBtnTxt').textContent='Post Notice';
+    document.getElementById('editingNoticeId').value='';
+    document.getElementById('nTitle').value='';
+    document.getElementById('nContent').value='';
+    document.getElementById('nCategory').value='Announcement';
+    document.getElementById('nClass').value='All Classes';
+    f.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+}
+function cancelNoticeForm(){
+  document.getElementById('noticeForm').classList.remove('show');
+}
+function saveNotice(){
+  const title = document.getElementById('nTitle').value.trim();
+  const content = document.getElementById('nContent').value.trim();
+  const category = document.getElementById('nCategory').value;
+  const targetClass = document.getElementById('nClass').value;
+  const editId = document.getElementById('editingNoticeId').value;
+
+  if(!title){showToast('Please enter a notice title!',true);return;}
+  if(!content){showToast('Please enter notice content!',true);return;}
+
+  const today = new Date().toISOString().split('T')[0];
+  if(editId){
+    const idx = notices.findIndex(n=>n.id==editId);
+    if(idx>=0){notices[idx]={...notices[idx],title,content,category,targetClass,date:today};}
+    showToast('Notice updated successfully!');
+  } else {
+    notices.unshift({id:Date.now(),title,content,category,targetClass,date:today,priority:'Normal'});
+    showToast('Notice posted successfully!');
+  }
+  localStorage.setItem('pq_notices',JSON.stringify(notices));
+  renderNotices();
+  cancelNoticeForm();
+}
+function editNotice(id){
+  const n = notices.find(x=>x.id===id);
+  if(!n)return;
+  const f = document.getElementById('noticeForm');
+  f.classList.add('show');
+  document.getElementById('nfTitle').textContent='Edit Notice';
+  document.getElementById('saveBtnTxt').textContent='Update Notice';
+  document.getElementById('editingNoticeId').value=id;
+  document.getElementById('nTitle').value=n.title;
+  document.getElementById('nContent').value=n.content;
+  document.getElementById('nCategory').value=n.category;
+  document.getElementById('nClass').value=n.targetClass;
+  f.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function deleteNotice(id){
+  if(!confirm('Delete this notice?'))return;
+  notices = notices.filter(n=>n.id!==id);
+  localStorage.setItem('pq_notices',JSON.stringify(notices));
+  renderNotices();
+  showToast('Notice deleted.');
+}
+
+/* =========================================
+   CLASS DETAIL MODAL
+========================================= */
+const CLASS_DETAILS = {
+  'python-fundamentals':{name:'Python Fundamentals',students:38,avg:72,topics:19,recent:['Riya Sharma — 90%','Ahmed Hassan — 68%','Zaid Chowdhury — 76%','Omar Farhan — 54%']},
+  'advanced-python':{name:'Advanced Python',students:24,avg:85,topics:19,recent:['Bilal Rana — 97%','Karim Ali — 95%','Tariq Hossain — 88%']},
+  'javascript-basics':{name:'JavaScript Basics',students:31,avg:58,topics:14,recent:['Nadia Islam — 83%','Sofia Rahman — 72%','Malia Chen — 60%']},
+  'html-css':{name:'HTML / CSS',students:31,avg:64,topics:25,recent:['Priya Singh — 78%','Layla Malik — 65%']},
+};
+function openClassDetail(id){
+  const d = CLASS_DETAILS[id];
+  if(!d)return;
+  document.getElementById('modalTitle').textContent = d.name+' — Class Details';
+  document.getElementById('modalBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      <div style="text-align:center;background:rgba(74,144,226,0.1);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--blue-light)">${d.students}</div>
+        <div style="font-size:0.78rem;color:var(--muted)">Students</div>
+      </div>
+      <div style="text-align:center;background:rgba(0,229,160,0.08);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--green)">${d.avg}%</div>
+        <div style="font-size:0.78rem;color:var(--muted)">Avg Progress</div>
+      </div>
+      <div style="text-align:center;background:rgba(255,184,0,0.08);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:1.8rem;font-weight:800;color:var(--yellow)">${d.topics}</div>
+        <div style="font-size:0.78rem;color:var(--muted)">Total Topics</div>
+      </div>
+    </div>
+    <div style="background:var(--navy-3);border:1px solid var(--border);border-radius:14px;padding:18px">
+      <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px"><i class="fas fa-trophy" style="color:var(--yellow)"></i>Recent Quiz Scores</h4>
+      ${d.recent.map(r=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:0.86rem"><span>${r.split('—')[0]}</span><span style="font-weight:700;color:var(--blue-light)">${r.split('—')[1]}</span></div>`).join('')}
+    </div>
+    <div style="margin-top:16px;background:var(--navy-3);border:1px solid var(--border);border-radius:14px;padding:18px">
+      <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px"><i class="fas fa-chart-bar" style="color:var(--blue)"></i>Class Progress</h4>
+      <div style="height:8px;background:var(--navy);border-radius:50px;overflow:hidden">
+        <div style="width:${d.avg}%;height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:50px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:7px;font-size:0.78rem;color:var(--muted)"><span>0%</span><span style="color:var(--blue-light);font-weight:700">${d.avg}% avg</span><span>100%</span></div>
+    </div>
+  `;
+  document.getElementById('classModal').classList.add('open');
+}
+function closeModal(e,force=false){
+  if(force||e.target===document.getElementById('classModal')){
+    document.getElementById('classModal').classList.remove('open');
+  }
+}
+
+/* =========================================
+   CHARTS
+========================================= */
+let chartsInit = {dashboard:false,quiz:false,errors:false};
+
+function initCharts(){
+  if(chartsInit.dashboard) return;
+  chartsInit.dashboard = true;
+  const co = {responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#8EA8C3',font:{family:'Sora',size:11}}}}};
+  const scl = {x:{ticks:{color:'#8EA8C3'},grid:{color:'rgba(74,144,226,0.08)'}},y:{ticks:{color:'#8EA8C3'},grid:{color:'rgba(74,144,226,0.08)'}}};
+
+  // Activity Chart
+  new Chart(document.getElementById('dashActivityChart'),{
+    type:'line',
+    data:{
+      labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[
+        {label:'Active Students',data:[72,84,68,91,89,45,32],borderColor:'#4A90E2',backgroundColor:'rgba(74,144,226,0.1)',tension:0.4,fill:true,pointBackgroundColor:'#4A90E2',pointRadius:4},
+        {label:'Quiz Attempts',data:[40,55,48,62,58,28,18],borderColor:'#00C8FF',backgroundColor:'rgba(0,200,255,0.07)',tension:0.4,fill:true,pointBackgroundColor:'#00C8FF',pointRadius:4},
+      ]
+    },
+    options:{...co,scales:scl}
+  });
+
+  // Language Distribution Doughnut
+  new Chart(document.getElementById('dashLangChart'),{
+    type:'doughnut',
+    data:{
+      labels:['Python','JavaScript','HTML/CSS','C/C++'],
+      datasets:[{data:[42,26,22,10],backgroundColor:['rgba(74,144,226,0.8)','rgba(255,184,0,0.8)','rgba(255,107,107,0.8)','rgba(0,229,160,0.8)'],borderWidth:0,hoverOffset:7}]
+    },
+    options:{...co,cutout:'62%',plugins:{...co.plugins,legend:{...co.plugins.legend,position:'bottom'}}}
+  });
+
+  // Quick Radar Chart
+  new Chart(document.getElementById('dashQuickChart'),{
+    type:'radar',
+    data:{
+      labels:['Variables','Loops','Functions','OOP','Web'],
+      datasets:[{label:'Class Avg',data:[85,68,72,58,75],borderColor:'#4A90E2',backgroundColor:'rgba(74,144,226,0.15)',pointBackgroundColor:'#4A90E2',pointRadius:3}]
+    },
+    options:{...co,scales:{r:{ticks:{color:'#8EA8C3',backdropColor:'transparent',font:{size:9}},grid:{color:'rgba(74,144,226,0.15)'},angleLines:{color:'rgba(74,144,226,0.15)'},pointLabels:{color:'#8EA8C3',font:{size:10}}}}}
+  });
+}
+
+function initQuizCharts(){
+  if(chartsInit.quiz) return;
+  chartsInit.quiz = true;
+  const co = {responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#8EA8C3',font:{family:'Sora',size:11}}}}};
+  const scl = {x:{ticks:{color:'#8EA8C3'},grid:{color:'rgba(74,144,226,0.08)'}},y:{ticks:{color:'#8EA8C3'},grid:{color:'rgba(74,144,226,0.08)'},min:0,max:100}};
+
+  // Topic Score Bar
+  new Chart(document.getElementById('topicScoreChart'),{
+    type:'bar',
+    data:{
+      labels:TOPIC_SCORES.map(t=>t.topic),
+      datasets:[{label:'Avg Score %',data:TOPIC_SCORES.map(t=>t.avg),backgroundColor:TOPIC_SCORES.map(t=>t.color+'CC'),borderColor:TOPIC_SCORES.map(t=>t.color),borderWidth:2,borderRadius:8}]
+    },
+    options:{...co,scales:scl,plugins:{...co.plugins,legend:{display:false}}}
+  });
+
+  // Attempts Over Time
+  new Chart(document.getElementById('attemptsChart'),{
+    type:'line',
+    data:{
+      labels:['Week 1','Week 2','Week 3','Week 4','Week 5','Week 6'],
+      datasets:[
+        {label:'Total Attempts',data:[45,78,92,118,134,342],borderColor:'#4A90E2',backgroundColor:'rgba(74,144,226,0.1)',tension:0.4,fill:true,pointBackgroundColor:'#4A90E2',pointRadius:5},
+        {label:'Passing (≥60%)',data:[30,55,70,92,108,280],borderColor:'#00E5A0',backgroundColor:'rgba(0,229,160,0.07)',tension:0.4,fill:true,pointBackgroundColor:'#00E5A0',pointRadius:5},
+      ]
+    },
+    options:{...co,scales:{x:{ticks:{color:'#8EA8C3'},grid:{color:'rgba(74,144,226,0.08)'}},y:{ticks:{color:'#8EA8C3'},grid:{color:'rgba(74,144,226,0.08)'}}}}
+  });
+}
+
+function initErrorCharts(){
+  if(chartsInit.errors) return;
+  chartsInit.errors = true;
+  const co = {responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#8EA8C3',font:{family:'Sora',size:11}}}}};
+  const colors = ['rgba(255,107,107,0.85)','rgba(255,184,0,0.85)','rgba(74,144,226,0.85)','rgba(0,229,160,0.85)','rgba(155,89,182,0.85)','rgba(0,200,255,0.85)'];
+
+  new Chart(document.getElementById('errPieChart'),{
+    type:'doughnut',
+    data:{
+      labels:ERRORS.map(e=>e.type),
+      datasets:[{data:ERRORS.map(e=>e.count),backgroundColor:colors,borderWidth:0,hoverOffset:8}]
+    },
+    options:{...co,cutout:'55%',plugins:{...co.plugins,legend:{display:false}}}
+  });
+
+  // Legend
+  document.getElementById('errLegend').innerHTML = ERRORS.map((e,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--muted)">
+      <div style="width:9px;height:9px;border-radius:50%;background:${colors[i]}"></div>${e.type}
+    </div>`).join('');
+}
+
+/* =========================================
+   TOAST
+========================================= */
+function showToast(msg, isErr=false){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast show' + (isErr?' err':'');
+  setTimeout(()=>t.className='toast',3500);
+}
+
+/* =========================================
+   LOGOUT
+========================================= */
+function logout(){
+  localStorage.removeItem('pyquest_current_user');
+  window.location.href='login.html';
+}
+
+/* =========================================
+   START
+========================================= */
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

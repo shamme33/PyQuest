@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCreeps - Programming Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Courier New', monospace;
+            color: #0f3460;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        h1 { grid-column: 1/-1; text-align: center; color: #00ff88; font-size: 2.2em; margin-bottom: 10px; text-shadow: 0 0 10px #00ff88; }
+        .info { grid-column: 1/-1; text-align: center; color: #00ff88; margin-bottom: 10px; }
+        .panel {
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.8), rgba(22, 33, 62, 0.8));
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        .panel h2 { color: #00ff88; margin-bottom: 15px; font-size: 1.3em; }
+        .canvas-wrapper {
+            background: #0a0e27;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+            border: 2px solid #00ff88;
+            border-radius: 5px;
+        }
+        .code-editor {
+            background: #0a0e27;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: #0a0e27;
+            color: #00ff88;
+            border: 2px solid #00ff88;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        textarea:focus { outline: none; box-shadow: 0 0 10px rgba(0, 255, 136, 0.5); }
+        .controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        button {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            color: #0a0e27;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4); }
+        button:active { transform: translateY(0); }
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .stat {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            color: #00ff88;
+        }
+        .stat .label { font-size: 12px; opacity: 0.8; }
+        .stat .value { font-size: 24px; font-weight: bold; }
+        .messages {
+            background: #0a0e27;
+            border: 2px solid #00ff88;
+            border-radius: 5px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            color: #00ff88;
+            font-size: 12px;
+        }
+        .message { margin: 5px 0; padding: 5px; border-left: 2px solid #00ff88; padding-left: 10px; }
+        .message.success { border-left-color: #00ff00; color: #00ff00; }
+        .message.error { border-left-color: #ff0000; color: #ff6666; }
+        .message.info { border-left-color: #00aaff; color: #00aaff; }
+        .task-list {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .task-item {
+            padding: 10px;
+            background: #0a0e27;
+            border: 1px solid #00ff88;
+            border-radius: 3px;
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+        .task-item.completed { opacity: 0.6; text-decoration: line-through; }
+        .task-item.active { border-color: #ffff00; color: #ffff00; }
+    </style>
+</head>
+<body>
+    <h1>⚙️ CODECREEPS</h1>
+    <div class="info">Write code to control your units and complete tasks</div>
+
+    <div class="container">
+        <div class="panel">
+            <h2>🎮 Game Board</h2>
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas"></canvas>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="label">UNITS</div>
+                    <div class="value" id="unit-count">0</div>
+                </div>
+                <div class="stat">
+                    <div class="label">RESOURCES</div>
+                    <div class="value" id="resource-count">0</div>
+                </div>
+                <div class="stat">
+                    <div class="label">SCORE</div>
+                    <div class="value" id="score-count">0</div>
+                </div>
+                <div class="stat">
+                    <div class="label">LEVEL</div>
+                    <div class="value" id="level-count">1</div>
+                </div>
+            </div>
+
+            <div class="task-list" id="task-list">
+                <h3 style="color: #00ff88; margin-bottom: 10px;">📋 OBJECTIVES</h3>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>⌨️ Code Editor</h2>
+            
+            <div class="code-editor">
+                <textarea id="code-input" placeholder="// Example Unit AI
+// Your units have methods:
+// move(direction) - 'up', 'down', 'left', 'right'
+// collectResource() - gather resources
+// attack() - attack enemy
+// say(message) - display message
+
+class MyUnit {
+    run() {
+        // Write your logic here
+        console.log('Unit is ready!');
+    }
+}
+
+// Or use simple functions
+function unitAI(unit) {
+    unit.move('right');
+}"></textarea>
+            </div>
+
+            <div class="controls">
+                <button onclick="deployUnits()">▶️ Deploy</button>
+                <button onclick="pauseGame()">⏸️ Pause</button>
+                <button onclick="resetGame()">↻ Reset</button>
+            </div>
+
+            <h3 style="color: #00ff88; margin-bottom: 10px;">📊 Output</h3>
+            <div class="messages" id="messages"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        canvas.width = 600;
+        canvas.height = 400;
+
+        const GRID_SIZE = 40;
+        const COLS = Math.floor(canvas.width / GRID_SIZE);
+        const ROWS = Math.floor(canvas.height / GRID_SIZE);
+
+        let gameState = {
+            units: [],
+            resources: [],
+            enemies: [],
+            score: 0,
+            level: 1,
+            running: false,
+            tick: 0
+        };
+
+        class Unit {
+            constructor(x, y, id) {
+                this.x = x;
+                this.y = y;
+                this.id = id;
+                this.health = 100;
+                this.energy = 100;
+                this.carrying = 0;
+                this.messages = [];
+            }
+
+            move(direction) {
+                const moves = { 'up': [0, -1], 'down': [0, 1], 'left': [-1, 0], 'right': [1, 0] };
+                if (moves[direction]) {
+                    const [dx, dy] = moves[direction];
+                    this.x = Math.max(0, Math.min(COLS - 1, this.x + dx));
+                    this.y = Math.max(0, Math.min(ROWS - 1, this.y + dy));
+                    this.energy -= 5;
+                }
+            }
+
+            collectResource() {
+                const resource = gameState.resources.find(r => r.x === this.x && r.y === this.y);
+                if (resource && this.carrying < 10) {
+                    this.carrying++;
+                    gameState.resources = gameState.resources.filter(r => r !== resource);
+                    gameState.score += 10;
+                    return true;
+                }
+                return false;
+            }
+
+            attack() {
+                const enemy = gameState.enemies.find(e => 
+                    Math.abs(e.x - this.x) <= 1 && Math.abs(e.y - this.y) <= 1
+                );
+                if (enemy) {
+                    enemy.health -= 20;
+                    this.energy -= 10;
+                    if (enemy.health <= 0) {
+                        gameState.enemies = gameState.enemies.filter(e => e !== enemy);
+                        gameState.score += 50;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            say(message) {
+                this.messages.push(message);
+                addMessage(`Unit ${this.id}: ${message}`);
+            }
+        }
+
+        function deployUnits() {
+            gameState.units = [];
+            gameState.score = 0;
+            gameState.resources = [];
+            gameState.enemies = [];
+            
+            // Create resources
+            for (let i = 0; i < 5; i++) {
+                gameState.resources.push({
+                    x: Math.floor(Math.random() * COLS),
+                    y: Math.floor(Math.random() * ROWS)
+                });
+            }
+
+            // Create enemies
+            for (let i = 0; i < 2; i++) {
+                gameState.enemies.push({
+                    x: Math.floor(Math.random() * COLS),
+                    y: Math.floor(Math.random() * ROWS),
+                    health: 50
+                });
+            }
+
+            // Create units
+            for (let i = 0; i < 3; i++) {
+                const unit = new Unit(Math.floor(Math.random() * COLS), Math.floor(Math.random() * ROWS), i + 1);
+                gameState.units.push(unit);
+            }
+
+            gameState.running = true;
+            addMessage('✓ Deployed 3 units!', 'success');
+            
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameState.running) return;
+
+            gameState.tick++;
+
+            // Execute unit logic
+            gameState.units.forEach(unit => {
+                if (gameState.tick % 2 === 0) { // Every 2 ticks
+                    // Simple AI: move towards resources
+                    const resource = gameState.resources[0];
+                    if (resource) {
+                        if (unit.x < resource.x) unit.move('right');
+                        else if (unit.x > resource.x) unit.move('left');
+                        else if (unit.y < resource.y) unit.move('down');
+                        else unit.collectResource();
+                    }
+                }
+            });
+
+            // Move enemies
+            gameState.enemies.forEach(enemy => {
+                if (Math.random() > 0.5) {
+                    const directions = ['up', 'down', 'left', 'right'];
+                    const dir = directions[Math.floor(Math.random() * directions.length)];
+                    const moves = { 'up': [0, -1], 'down': [0, 1], 'left': [-1, 0], 'right': [1, 0] };
+                    const [dx, dy] = moves[dir];
+                    enemy.x = Math.max(0, Math.min(COLS - 1, enemy.x + dx));
+                    enemy.y = Math.max(0, Math.min(ROWS - 1, enemy.y + dy));
+                }
+            });
+
+            render();
+            updateStats();
+
+            setTimeout(gameLoop, 200);
+        }
+
+        function render() {
+            // Clear canvas
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= COLS; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * GRID_SIZE, 0);
+                ctx.lineTo(i * GRID_SIZE, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i <= ROWS; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * GRID_SIZE);
+                ctx.lineTo(canvas.width, i * GRID_SIZE);
+                ctx.stroke();
+            }
+
+            // Draw resources
+            gameState.resources.forEach(r => {
+                ctx.fillStyle = '#ffff00';
+                ctx.fillRect(r.x * GRID_SIZE + 5, r.y * GRID_SIZE + 5, GRID_SIZE - 10, GRID_SIZE - 10);
+            });
+
+            // Draw enemies
+            gameState.enemies.forEach(e => {
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.arc(e.x * GRID_SIZE + GRID_SIZE / 2, e.y * GRID_SIZE + GRID_SIZE / 2, GRID_SIZE / 2 - 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw units
+            gameState.units.forEach((u, i) => {
+                ctx.fillStyle = '#00ff88';
+                ctx.fillRect(u.x * GRID_SIZE + 8, u.y * GRID_SIZE + 8, GRID_SIZE - 16, GRID_SIZE - 16);
+                ctx.fillStyle = '#0a0e27';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(u.id, u.x * GRID_SIZE + GRID_SIZE / 2, u.y * GRID_SIZE + GRID_SIZE / 2 + 4);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('unit-count').textContent = gameState.units.length;
+            document.getElementById('resource-count').textContent = gameState.resources.length;
+            document.getElementById('score-count').textContent = gameState.score;
+            document.getElementById('level-count').textContent = gameState.level;
+        }
+
+        function pauseGame() {
+            gameState.running = !gameState.running;
+            addMessage(gameState.running ? 'Resumed' : 'Paused', 'info');
+            if (gameState.running) gameLoop();
+        }
+
+        function resetGame() {
+            gameState.running = false;
+            gameState.units = [];
+            gameState.resources = [];
+            gameState.enemies = [];
+            gameState.score = 0;
+            gameState.tick = 0;
+            render();
+            updateStats();
+            addMessage('Game reset', 'info');
+        }
+
+        function addMessage(msg, type = 'info') {
+            const messagesDiv = document.getElementById('messages');
+            const msgEl = document.createElement('div');
+            msgEl.className = `message ${type}`;
+            msgEl.textContent = msg;
+            messagesDiv.appendChild(msgEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Initialize
+        render();
+        updateStats();
+        addMessage('Ready to deploy units! Click Deploy to start.', 'info');
+    </script>
+</body>
+</html>

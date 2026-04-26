@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz - PyQuest</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--navy:#0D1B2A;--navy-2:#162336;--navy-3:#1E2D42;--blue:#4A90E2;--blue-light:#6BAEFF;--accent:#00C8FF;--green:#00E5A0;--yellow:#FFB800;--red:#FF6B6B;--white:#FFFFFF;--muted:#8EA8C3;--border:rgba(74,144,226,0.2);--card:rgba(22,35,54,0.9);--sidebar-w:260px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Sora',sans-serif;background:var(--navy);color:var(--white);display:flex;min-height:100vh;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--navy);}::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px;}
+.sidebar{width:var(--sidebar-w);min-height:100vh;background:rgba(13,20,32,0.98);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;transition:transform 0.3s;}
+.sb-logo{padding:24px 22px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);text-decoration:none;}
+.sb-logo-ico{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:white;flex-shrink:0;}
+.sb-logo-txt{font-size:1.3rem;font-weight:800;color:var(--white);}
+.sb-logo-txt span{background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sb-nav{flex:1;padding:16px 12px;overflow-y:auto;}
+.sb-section-lbl{font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:8px 12px 6px;margin-top:6px;}
+.sb-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;text-decoration:none;color:var(--muted);font-size:0.88rem;font-weight:500;transition:all 0.2s;margin-bottom:2px;position:relative;}
+.sb-item:hover{background:rgba(74,144,226,0.1);color:var(--white);}
+.sb-item.active{background:linear-gradient(135deg,rgba(74,144,226,0.2),rgba(0,200,255,0.08));color:var(--white);border:1px solid rgba(74,144,226,0.3);}
+.sb-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:linear-gradient(180deg,var(--blue),var(--accent));border-radius:0 3px 3px 0;}
+.sb-item i{width:20px;text-align:center;font-size:0.95rem;}
+.sb-badge{margin-left:auto;background:var(--red);color:white;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:50px;}
+.sb-bottom{padding:14px 12px;border-top:1px solid var(--border);}
+.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;}
+.sb-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--accent));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;}
+.sb-user-info{flex:1;}.sb-user-name{font-size:0.85rem;font-weight:700;}.sb-user-role{font-size:0.72rem;color:var(--muted);}
+.sb-logout{color:var(--muted);font-size:0.8rem;cursor:pointer;transition:color 0.2s;}.sb-logout:hover{color:var(--red);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{padding:16px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(13,27,42,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:14px;}.menu-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:6px;display:none;}
+.breadcrumb{font-size:0.85rem;color:var(--muted);}.breadcrumb span{color:var(--white);font-weight:600;}
+.page-content{padding:28px 32px;flex:1;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99;}.overlay.show{display:block;}
+.quiz-header{text-align:center;margin-bottom:32px;}
+.quiz-header h2{font-size:1.8rem;font-weight:800;margin-bottom:8px;}
+.quiz-header p{color:var(--muted);font-size:0.95rem;}
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;max-width:800px;margin:0 auto;}
+.tq-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 16px;text-align:center;cursor:pointer;transition:all 0.3s;}
+.tq-card:hover{border-color:var(--blue);transform:translateY(-4px);box-shadow:0 12px 36px rgba(74,144,226,0.2);}
+.tq-ico{font-size:2rem;margin-bottom:10px;}
+.tq-card h3{font-size:0.95rem;font-weight:700;margin-bottom:5px;}
+.tq-card p{font-size:0.78rem;color:var(--muted);}
+.tq-count{font-size:0.72rem;color:var(--blue-light);margin-top:8px;font-weight:600;}
+.quiz-screen{display:none;max-width:760px;margin:0 auto;}
+.quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.quiz-info{font-size:0.88rem;color:var(--muted);}
+.quiz-timer{display:flex;align-items:center;gap:7px;padding:7px 16px;background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.3);border-radius:50px;font-weight:700;color:var(--yellow);font-size:0.9rem;}
+.quiz-timer.urgent{background:rgba(255,107,107,0.1);border-color:rgba(255,107,107,0.3);color:var(--red);}
+.q-progress{margin-bottom:22px;}
+.q-prog-top{display:flex;justify-content:space-between;margin-bottom:7px;font-size:0.82rem;color:var(--muted);}
+.q-prog-bar{height:6px;background:var(--navy-3);border-radius:50px;overflow:hidden;}
+.q-prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:50px;transition:width 0.5s ease;}
+.q-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;}
+.q-label{font-size:0.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.q-text{font-size:1.05rem;font-weight:600;line-height:1.6;margin-bottom:18px;}
+.code-snippet{background:#07111d;border:1px solid var(--border);border-radius:12px;padding:18px 20px;font-family:'Fira Code',monospace;font-size:0.86rem;line-height:1.9;margin-bottom:20px;overflow-x:auto;}
+.kw{color:#C792EA}.str{color:#C3E88D}.fn{color:#82AAFF}.cm{color:#4a6a7a;font-style:italic}.vr{color:#F78C6C}.out{color:#00C8FF}.num{color:#F78C6C}
+.options{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+.opt{display:flex;align-items:center;gap:13px;padding:14px 18px;background:rgba(255,255,255,0.03);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.2s;font-size:0.93rem;font-family:'Fira Code',monospace;}
+.opt:hover:not(.disabled){border-color:var(--blue);background:rgba(74,144,226,0.08);}
+.opt.selected{border-color:var(--blue);background:rgba(74,144,226,0.12);}
+.opt.correct{border-color:var(--green);background:rgba(0,229,160,0.1);}
+.opt.wrong{border-color:var(--red);background:rgba(255,107,107,0.1);}
+.opt.disabled{cursor:default;}
+.opt-letter{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--muted);flex-shrink:0;font-family:'Sora',sans-serif;}
+.opt.selected .opt-letter{background:var(--blue);color:white;}
+.opt.correct .opt-letter{background:var(--green);color:var(--navy);}
+.opt.wrong .opt-letter{background:var(--red);color:white;}
+.feedback{border-radius:14px;padding:18px 20px;margin-bottom:18px;display:none;animation:slideIn 0.3s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.feedback.correct-fb{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.3);}
+.feedback.wrong-fb{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.3);}
+.fb-title{font-size:0.95rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.fb-correct{color:var(--green)}.fb-wrong{color:var(--red);}
+.fb-body{font-size:0.87rem;color:var(--muted);line-height:1.65;}
+.btn-submit{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),var(--accent));border:none;border-radius:12px;color:white;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;transition:all 0.3s;}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(74,144,226,0.45);}
+.btn-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.result-screen{display:none;max-width:680px;margin:0 auto;text-align:center;}
+.result-circle{width:140px;height:140px;border-radius:50%;border:4px solid var(--blue);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 24px;background:rgba(74,144,226,0.1);}
+.result-pct{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.result-lbl{font-size:0.8rem;color:var(--muted);}
+.result-title{font-size:1.6rem;font-weight:800;margin-bottom:8px;}
+.result-sub{color:var(--muted);font-size:0.95rem;margin-bottom:28px;}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+.rs-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.rs-num{font-size:1.8rem;font-weight:800;line-height:1;}
+.rs-lbl{font-size:0.78rem;color:var(--muted);margin-top:4px;}
+.rs-correct .rs-num{color:var(--green);}.rs-wrong .rs-num{color:var(--red);}.rs-acc .rs-num{color:var(--blue-light);}
+.weak-topics{background:var(--card);border:1px solid rgba(255,184,0,0.25);border-radius:14px;padding:20px;margin-bottom:22px;text-align:left;}
+.weak-topics h4{font-size:0.9rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--yellow);}
+.weak-tag{display:inline-block;padding:5px 13px;background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.25);color:var(--yellow);border-radius:50px;font-size:0.8rem;margin:4px;}
+.result-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-retry{padding:13px 28px;background:linear-gradient(135deg,var(--blue),var(--accent));border:none;border-radius:12px;color:white;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;transition:all 0.3s;}
+.btn-retry:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,144,226,0.4);}
+.btn-outline{padding:13px 28px;background:transparent;border:1.5px solid var(--border);border-radius:12px;color:var(--white);font-size:0.95rem;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:all 0.3s;}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue-light);}
+@media(max-width:768px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.main{margin-left:0;}.menu-btn{display:block;}.page-content{padding:18px 14px;}.topbar{padding:14px 16px;}.result-stats{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <a href="index.html" class="sb-logo"><div class="sb-logo-ico">🐍</div><span class="sb-logo-txt">Py<span>Quest</span></span></a>
+  <nav class="sb-nav">
+    <div class="sb-section-lbl">Main</div>
+    <a href="studentdashboard.html" class="sb-item"><i class="fas fa-th-large"></i> Dashboard</a>
+    <a href="studenttutorial.html" class="sb-item"><i class="fas fa-book-open"></i> Tutorials</a>
+    <a href="studentsandbox.html" class="sb-item"><i class="fas fa-terminal"></i> Sandbox</a>
+    <a href="gameindex.html" class="sb-item"><i class="fas fa-gamepad"></i> Games <span class="sb-badge">3</span></a>
+    <a href="studentquiz.html" class="sb-item active"><i class="fas fa-brain"></i> Quiz</a>
+    <a href="studentprogress.html" class="sb-item"><i class="fas fa-chart-line"></i> Progress</a>
+    <div class="sb-section-lbl">Account</div>
+    <a href="#" class="sb-item"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  <div class="sb-bottom"><div class="sb-user"><div class="sb-avatar" id="sbAv">S</div><div class="sb-user-info"><div class="sb-user-name" id="sbNm">Student</div><div class="sb-user-role">Student</div></div><i class="fas fa-sign-out-alt sb-logout" onclick="logout()"></i></div></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="breadcrumb">PyQuest / <span id="bcText">Quiz</span></div>
+    </div>
+  </div>
+  <div class="page-content">
+    <div id="topicSelect">
+      <div class="quiz-header">
+        <h2>🧠 Choose Your Quiz Topic</h2>
+        <p>Select a topic to test your knowledge. Each quiz has 5 questions.</p>
+      </div>
+      <div class="topic-grid">
+        <div class="tq-card" onclick="startQuiz('variables')"><div class="tq-ico">📦</div><h3>Variables</h3><p>Data storage basics</p><div class="tq-count">5 Questions</div></div>
+        <div class="tq-card" onclick="startQuiz('conditions')"><div class="tq-ico">🔀</div><h3>Conditions</h3><p>if, elif, else</p><div class="tq-count">5 Questions</div></div>
+        <div class="tq-card" onclick="startQuiz('loops')"><div class="tq-ico">🔁</div><h3>Loops</h3><p>for and while loops</p><div class="tq-count">5 Questions</div></div>
+        <div class="tq-card" onclick="startQuiz('functions')"><div class="tq-ico">⚙️</div><h3>Functions</h3><p>Reusable code blocks</p><div class="tq-count">5 Questions</div></div>
+        <div class="tq-card" onclick="startQuiz('lists')"><div class="tq-ico">📋</div><h3>Lists</h3><p>Arrays and list ops</p><div class="tq-count">5 Questions</div></div>
+        <div class="tq-card" onclick="startQuiz('operators')"><div class="tq-ico">➕</div><h3>Operators</h3><p>Math & comparisons</p><div class="tq-count">5 Questions</div></div>
+      </div>
+    </div>
+    <div id="quizScreen" class="quiz-screen">
+      <div class="quiz-top">
+        <div class="quiz-info">Topic: <strong id="qTopicName">Variables</strong></div>
+        <div class="quiz-timer" id="timer"><i class="fas fa-clock"></i> <span id="timerVal">30</span>s</div>
+      </div>
+      <div class="q-progress">
+        <div class="q-prog-top"><span id="qNum">Question 1 of 5</span><span id="qScore">Score: 0</span></div>
+        <div class="q-prog-bar"><div class="q-prog-fill" id="qFill" style="width:0%"></div></div>
+      </div>
+      <div class="q-box">
+        <div class="q-label" id="qLabel">🐍 Python</div>
+        <div class="q-text" id="qText"></div>
+        <div class="code-snippet" id="qCode" style="display:none"></div>
+        <div class="options" id="qOpts"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="btn-submit" id="submitBtn" onclick="submitAnswer()">Submit Answer</button>
+      </div>
+    </div>
+    <div id="resultScreen" class="result-screen">
+      <div class="result-circle">
+        <div class="result-pct" id="resPct">0%</div>
+        <div class="result-lbl">Score</div>
+      </div>
+      <div class="result-title" id="resTitle">Quiz Complete!</div>
+      <div class="result-sub" id="resSub">Here's how you did</div>
+      <div class="result-stats">
+        <div class="rs-card rs-correct"><div class="rs-num" id="resCorrect">0</div><div class="rs-lbl">✅ Correct</div></div>
+        <div class="rs-card rs-wrong"><div class="rs-num" id="resWrong">0</div><div class="rs-lbl">❌ Wrong</div></div>
+        <div class="rs-card rs-acc"><div class="rs-num" id="resAcc">0%</div><div class="rs-lbl">🎯 Accuracy</div></div>
+      </div>
+      <div class="weak-topics" id="weakBox" style="display:none">
+        <h4><i class="fas fa-exclamation-triangle"></i> Topics to Review:</h4>
+        <div id="weakTags"></div>
+      </div>
+      <div class="result-btns">
+        <button class="btn-retry" onclick="retryQuiz()"><i class="fas fa-redo"></i> Retry Quiz</button>
+        <button class="btn-outline" onclick="backToTopics()"><i class="fas fa-list"></i> All Topics</button>
+        <button class="btn-outline" onclick="window.location.href='studentprogress.html'"><i class="fas fa-chart-line"></i> View Progress</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const QUIZDATA = {
+  variables:[{q:"What is the output of this code?",code:"x = 10\ny = 3\nprint(x + y)",opts:["7","13","103","30"],ans:1,exp:"x = 10 and y = 3, so x + y = 13."},{q:"Which variable name is valid in Python?",code:"",opts:["1name","my name","my_name","my-name"],ans:2,exp:"Variable names can only contain letters, digits, and underscores. They cannot start with a digit or contain spaces or hyphens."},{q:"What type does this variable have?",code:'name = "PyQuest"',opts:["int","float","str","bool"],ans:2,exp:'Anything wrapped in quotes is a string (str).'},{q:"What is the output?",code:"x = 5\nx = x + 1\nprint(x)",opts:["5","6","51","Error"],ans:1,exp:"x starts as 5. Then x = x + 1 = 6."},{q:"Which creates a Boolean variable?",code:"",opts:["x = 1","x = 'True'","x = True","x = (True)"],ans:2,exp:"Boolean values in Python are True and False (capitalized, no quotes)."}],
+  conditions:[{q:"What is the output of this code?",code:"age = 18\nif age >= 18:\n    print('Adult')\nelse:\n    print('Minor')",opts:["Minor","Adult","Error","Nothing"],ans:1,exp:"age is 18, and 18 >= 18 is True, so the if block runs and prints 'Adult'."},{q:"What does elif mean?",code:"",opts:["else if","error if","end if","else in for"],ans:0,exp:"elif is short for 'else if'."},{q:"What is the output?",code:"x = 10\nif x > 20:\n    print('Big')\nelif x > 5:\n    print('Medium')\nelse:\n    print('Small')",opts:["Big","Small","Medium","Error"],ans:2,exp:"x=10 is not > 20 but IS > 5, so elif runs and prints 'Medium'."},{q:"Which is the correct way to check equality in Python?",code:"",opts:["x = 5","x == 5","x === 5","x.equals(5)"],ans:1,exp:"In Python, == is used to compare values."},{q:"What is the output?",code:"score = 75\ngrade = 'A' if score >= 90 else 'B' if score >= 75 else 'C'\nprint(grade)",opts:["A","B","C","Error"],ans:1,exp:"score=75. 75 >= 90 is False, but 75 >= 75 is True. So grade = 'B'."}],
+  loops:[{q:"What does this loop print?",code:"for i in range(3):\n    print(i)",opts:["1 2 3","0 1 2","0 1 2 3","1 2"],ans:1,exp:"range(3) generates numbers 0, 1, 2."},{q:"How many times does this loop run?",code:"count = 0\nwhile count < 5:\n    count += 1",opts:["4","5","6","Infinite"],ans:1,exp:"count starts at 0 and runs while count is 0,1,2,3,4 — that's 5 times."},{q:"What keyword stops a loop immediately?",code:"",opts:["stop","exit","break","return"],ans:2,exp:"break immediately exits the nearest loop."},{q:"What is the output?",code:"total = 0\nfor n in [1, 2, 3, 4]:\n    total += n\nprint(total)",opts:["4","10","24","1234"],ans:1,exp:"total starts at 0 then adds 1+2+3+4 = 10."},{q:"What does range(2, 8, 2) produce?",code:"",opts:["[2,4,6,8]","[2,4,6]","[0,2,4,6]","[2,8,2]"],ans:1,exp:"range(2, 8, 2) produces 2, 4, 6. It starts at 2, stops before 8, steps by 2."}],
+  functions:[{q:"What is the output?",code:"def greet(name):\n    return 'Hello, ' + name\n\nprint(greet('Alice'))",opts:["Hello","Alice","Hello, Alice","Error"],ans:2,exp:"greet('Alice') returns 'Hello, Alice' which is then printed."},{q:"What keyword defines a function in Python?",code:"",opts:["function","func","def","define"],ans:2,exp:"In Python, def is the keyword to define a function."},{q:"What does return do?",code:"",opts:["Ends the program","Prints a value","Sends a value back from function","Loops back"],ans:2,exp:"return sends a value back to whoever called the function."},{q:"What is the output?",code:"def add(a, b=10):\n    return a + b\n\nprint(add(5))",opts:["5","10","15","Error"],ans:2,exp:"b has a default value of 10. add(5) = 5 + 10 = 15."},{q:"Which correctly calls a function?",code:"def say_hi():\n    print('Hi!')",opts:["say_hi","say_hi()","call say_hi()","say_hi.call()"],ans:1,exp:"To call a function, write its name followed by parentheses: say_hi()."}],
+  lists:[{q:"What does len() return here?",code:"fruits = ['apple', 'mango', 'banana']\nprint(len(fruits))",opts:["2","3","4","Error"],ans:1,exp:"The list has 3 items. len() counts all items."},{q:"What is the output?",code:"nums = [10, 20, 30, 40]\nprint(nums[2])",opts:["20","30","40","Error"],ans:1,exp:"Lists are zero-indexed. Index 2 = 30."},{q:"Which method adds an item to the end of a list?",code:"",opts:["list.add()","list.push()","list.append()","list.insert(0)"],ans:2,exp:"append() adds an item to the end of the list."},{q:"What is the output?",code:"a = [1, 2, 3]\nb = a\nb.append(4)\nprint(len(a))",opts:["3","4","Error","1"],ans:1,exp:"b = a does NOT copy the list — both point to the SAME list. len(a) = 4."},{q:"How do you access the last item in any list?",code:"",opts:["list[len-1]","list[last]","list[-1]","list.last()"],ans:2,exp:"list[-1] is always the last item in Python."}],
+  operators:[{q:"What is the output?",code:"print(10 % 3)",opts:["3","1","3.33","0"],ans:1,exp:"% is the modulo operator — remainder after division. 10 ÷ 3 = 3 remainder 1."},{q:"What does ** do in Python?",code:"print(2 ** 8)",opts:["Multiply by 8","16","256","Error"],ans:2,exp:"** is the power operator. 2 ** 8 = 256."},{q:"What is the result?",code:"x = 5\nx += 3\nprint(x)",opts:["5","3","8","53"],ans:2,exp:"x += 3 is shorthand for x = x + 3. 5 + 3 = 8."},{q:"Which comparison returns True?",code:"",opts:["5 == '5'","5 != 5","5 >= 5","5 > 5"],ans:2,exp:"5 >= 5 is True because >= means 'greater than OR equal to'."},{q:"What does 'and' do in Python?",code:"a = True\nb = False\nprint(a and b)",opts:["True","False","Error","1"],ans:1,exp:"'and' returns True only if BOTH sides are True. True and False = False."}]
+};
+let currentTopic='',questions=[],currentQ=0,score=0,selectedOpt=null,answered=false,timerInterval=null,timeLeft=30,wrongTopics=[];
+function startQuiz(topic){
+  currentTopic=topic;questions=QUIZDATA[topic];currentQ=0;score=0;wrongTopics=[];
+  const names={variables:'Variables',conditions:'Conditions',loops:'Loops',functions:'Functions',lists:'Lists',operators:'Operators'};
+  document.getElementById('qTopicName').textContent=names[topic];
+  document.getElementById('bcText').textContent=names[topic]+' Quiz';
+  document.getElementById('topicSelect').style.display='none';
+  document.getElementById('quizScreen').style.display='block';
+  loadQuestion();
+}
+function loadQuestion(){
+  const q=questions[currentQ];answered=false;selectedOpt=null;
+  const pct=(currentQ/questions.length)*100;
+  document.getElementById('qFill').style.width=pct+'%';
+  document.getElementById('qNum').textContent=`Question ${currentQ+1} of ${questions.length}`;
+  document.getElementById('qScore').textContent=`Score: ${score}`;
+  document.getElementById('qText').textContent=q.q;
+  const codeEl=document.getElementById('qCode');
+  if(q.code){codeEl.style.display='block';codeEl.innerHTML=`<pre>${highlightCode(q.code)}</pre>`;}else{codeEl.style.display='none';}
+  const letters=['A','B','C','D'];
+  document.getElementById('qOpts').innerHTML=q.opts.map((o,i)=>`<div class="opt" id="opt${i}" onclick="selectOpt(${i})"><div class="opt-letter">${letters[i]}</div><span style="font-family:'Fira Code',monospace">${o}</span></div>`).join('');
+  const fb=document.getElementById('feedback');fb.style.display='none';fb.className='feedback';
+  document.getElementById('submitBtn').textContent='Submit Answer';
+  document.getElementById('submitBtn').disabled=false;
+  document.getElementById('submitBtn').onclick=submitAnswer;
+  startTimer();
+}
+function startTimer(){
+  clearInterval(timerInterval);timeLeft=30;updateTimer();
+  timerInterval=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInterval);autoSubmit();}},1000);
+}
+function updateTimer(){
+  document.getElementById('timerVal').textContent=timeLeft;
+  document.getElementById('timer').className='quiz-timer'+(timeLeft<=10?' urgent':'');
+}
+function autoSubmit(){if(!answered)submitAnswer(true);}
+function selectOpt(i){
+  if(answered)return;selectedOpt=i;
+  document.querySelectorAll('.opt').forEach((o,idx)=>o.classList.toggle('selected',idx===i));
+}
+function submitAnswer(auto=false){
+  if(answered)return;
+  if(selectedOpt===null&&!auto){
+    const sb=document.getElementById('submitBtn');sb.textContent='Please select an answer!';setTimeout(()=>sb.textContent='Submit Answer',1500);return;
+  }
+  clearInterval(timerInterval);answered=true;
+  const q=questions[currentQ];const correct=selectedOpt===q.ans;
+  if(correct)score++;else wrongTopics.push(q.q.substring(0,30)+'...');
+  document.querySelectorAll('.opt').forEach((o,i)=>{o.classList.add('disabled');if(i===q.ans)o.classList.add('correct');else if(i===selectedOpt)o.classList.add('wrong');});
+  const fb=document.getElementById('feedback');fb.style.display='block';
+  if(correct){fb.className='feedback correct-fb';fb.innerHTML=`<div class="fb-title fb-correct">✅ Correct! Well done!</div><div class="fb-body">${q.exp}</div>`;}
+  else{fb.className='feedback wrong-fb';fb.innerHTML=`<div class="fb-title fb-wrong">❌ Not quite — here's why:</div><div class="fb-body">${q.exp}</div>`;}
+  const sb=document.getElementById('submitBtn');
+  if(currentQ<questions.length-1){sb.textContent='Next Question →';sb.onclick=()=>{currentQ++;loadQuestion();};}
+  else{sb.textContent='🎉 See Results';sb.onclick=showResults;}
+}
+function showResults(){
+  document.getElementById('quizScreen').style.display='none';
+  document.getElementById('resultScreen').style.display='block';
+  const total=questions.length;const pct=Math.round((score/total)*100);
+  document.getElementById('resPct').textContent=pct+'%';
+  document.getElementById('resCorrect').textContent=score;
+  document.getElementById('resWrong').textContent=total-score;
+  document.getElementById('resAcc').textContent=pct+'%';
+  let title='',sub='';
+  if(pct>=90){title='🎉 Excellent!';sub='Outstanding performance! You\'ve mastered this topic!';}
+  else if(pct>=70){title='👍 Great Job!';sub='You\'re getting it! A bit more practice and you\'ll ace it.';}
+  else if(pct>=50){title='📚 Keep Going!';sub='Good effort! Review the explanations and try again.';}
+  else{title='💪 Don\'t Give Up!';sub='Every mistake is a learning opportunity. Review and retry!';}
+  document.getElementById('resTitle').textContent=title;
+  document.getElementById('resSub').textContent=sub;
+  if(wrongTopics.length>0){document.getElementById('weakBox').style.display='block';document.getElementById('weakTags').innerHTML=wrongTopics.map(t=>`<span class="weak-tag">${t}</span>`).join('');}
+  const u=JSON.parse(localStorage.getItem('pyquest_current_user')||'{}');
+  if(u.id){u.progress=u.progress||{};u.progress.quizzesDone=(u.progress.quizzesDone||0)+1;localStorage.setItem('pyquest_current_user',JSON.stringify(u));const users=JSON.parse(localStorage.getItem('pyquest_users')||'[]');const idx=users.findIndex(x=>x.id===u.id);if(idx>=0){users[idx]=u;localStorage.setItem('pyquest_users',JSON.stringify(users));}}
+}
+function retryQuiz(){document.getElementById('resultScreen').style.display='none';startQuiz(currentTopic);}
+function backToTopics(){document.getElementById('resultScreen').style.display='none';document.getElementById('topicSelect').style.display='block';document.getElementById('bcText').textContent='Quiz';}
+function highlightCode(code){return code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/(#[^\n]*)/g,'<span class="cm">$1</span>').replace(/(".*?"|'.*?')/g,'<span class="str">$1</span>').replace(/\b(def|class|if|else|elif|for|while|return|True|False|None|in|and|or|not|print|input|range|len)\b/g,'<span class="kw">$1</span>').replace(/\b(\d+)\b/g,'<span class="num">$1</span>');}
+const u=JSON.parse(localStorage.getItem('pyquest_current_user')||'{}');
+if(u.firstName){document.getElementById('sbNm').textContent=u.firstName+' '+(u.lastName||'');document.getElementById('sbAv').textContent=u.firstName[0].toUpperCase();}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
+function logout(){localStorage.removeItem('pyquest_current_user');window.location.href='login.html';}
+</script>
+</body>
+</html>

@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyQuest - Overcome the Fear of Programming</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --navy: #0D1B2A;
+            --navy-2: #162336;
+            --navy-3: #1E2D42;
+            --blue: #4A90E2;
+            --blue-light: #6BAEFF;
+            --blue-soft: #C5DCFF;
+            --white: #FFFFFF;
+            --white-soft: #EEF4FF;
+            --muted: #8EA8C3;
+            --accent: #00C8FF;
+            --green: #00E5A0;
+            --card-bg: rgba(30, 45, 66, 0.8);
+            --border: rgba(74, 144, 226, 0.2);
+            --shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--navy);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--navy); }
+        ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 3px; }
+
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 18px 5%;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(13, 27, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+        nav.scrolled { padding: 12px 5%; box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
+        .logo {
+            font-size: 1.6rem; font-weight: 800;
+            color: var(--white); text-decoration: none;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .logo span {
+            background: linear-gradient(135deg, var(--blue), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--blue), var(--accent));
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: white; -webkit-text-fill-color: white;
+        }
+        .nav-links { display: flex; align-items: center; gap: 4px; list-style: none; }
+        .nav-links a {
+            color: var(--muted); text-decoration: none;
+            font-size: 0.9rem; font-weight: 500;
+            padding: 8px 14px; border-radius: 8px; transition: all 0.2s;
+        }
+        .nav-links a:hover { color: var(--white); background: rgba(74,144,226,0.1); }
+        .nav-auth { display: flex; gap: 10px; }
+        .btn-nav-login {
+            padding: 9px 20px; border: 1px solid var(--blue);
+            color: var(--blue); border-radius: 8px; text-decoration: none;
+            font-size: 0.9rem; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-nav-login:hover { background: var(--blue); color: white; }
+        .btn-nav-reg {
+            padding: 9px 20px;
+            background: linear-gradient(135deg, var(--blue), var(--accent));
+            color: white; border-radius: 8px; text-decoration: none;
+            font-size: 0.9rem; font-weight: 600; transition: all 0.3s;
+        }
+        .btn-nav-reg:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(74,144,226,0.4); }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; }
+        .hamburger span { width: 24px; height: 2px; background: var(--white); border-radius: 2px; transition: all 0.3s; }
+        .mobile-menu {
+            display: none; position: fixed;
+            top: 68px; left: 0; right: 0;
+            background: rgba(13,27,42,0.98); backdrop-filter: blur(20px);
+            padding: 16px; border-bottom: 1px solid var(--border);
+            z-index: 999; flex-direction: column; gap: 6px;
+        }
+        .mobile-menu.open { display: flex; }
+        .mobile-menu a {
+            color: var(--muted); text-decoration: none;
+            padding: 12px 16px; border-radius: 10px; font-size: 0.95rem; transition: all 0.2s;
+        }
+        .mobile-menu a:hover { background: rgba(74,144,226,0.1); color: var(--white); }
+
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 120px 5% 60px; position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(74,144,226,0.12) 0%, transparent 70%);
+            top: -150px; right: -200px;
+            animation: blob 8s ease-in-out infinite;
+        }
+        .hero::after {
+            content: ''; position: absolute;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0,200,255,0.08) 0%, transparent 70%);
+            bottom: -100px; left: -100px;
+            animation: blob 10s ease-in-out infinite reverse;
+        }
+        @keyframes blob { 0%,100%{transform:scale(1) rotate(0deg)} 50%{transform:scale(1.15) rotate(10deg)} }
+        .hero-content { text-align: center; max-width: 820px; position: relative; z-index: 1; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(74,144,226,0.12); border: 1px solid var(--border);
+            padding: 8px 20px; border-radius: 50px;
+            font-size: 0.85rem; color: var(--blue-light);
+            margin-bottom: 30px; animation: fadeDown 0.8s ease both;
+        }
+        .hero-badge .dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse2 2s infinite; }
+        @keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .hero-title {
+            font-size: clamp(2rem, 5.5vw, 4.2rem); font-weight: 800;
+            line-height: 1.15; margin-bottom: 16px;
+            animation: fadeUp 0.8s ease 0.2s both;
+        }
+        .hero-rotating-text {
+            display: block;
+            background: linear-gradient(135deg, var(--blue), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            min-height: 1.3em; transition: all 0.4s ease;
+        }
+        .hero-sub {
+            font-size: 1.1rem; color: var(--muted);
+            margin-bottom: 42px; line-height: 1.75;
+            animation: fadeUp 0.8s ease 0.4s both;
+        }
+        .hero-btns {
+            display: flex; gap: 16px; justify-content: center;
+            flex-wrap: wrap; margin-bottom: 60px;
+            animation: fadeUp 0.8s ease 0.6s both;
+        }
+        .btn-primary {
+            padding: 15px 34px;
+            background: linear-gradient(135deg, var(--blue), var(--accent));
+            color: white; border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            text-decoration: none; transition: all 0.3s;
+            display: inline-flex; align-items: center; gap: 9px;
+            font-family: 'Sora', sans-serif;
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(74,144,226,0.5); }
+        .btn-secondary {
+            padding: 15px 34px; background: transparent; color: var(--white);
+            border: 1.5px solid rgba(255,255,255,0.25); border-radius: 12px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            text-decoration: none; transition: all 0.3s;
+            display: inline-flex; align-items: center; gap: 9px;
+            font-family: 'Sora', sans-serif;
+        }
+        .btn-secondary:hover { border-color: var(--blue); color: var(--blue-light); background: rgba(74,144,226,0.08); }
+
+        .code-editor {
+            background: #07111d; border: 1px solid var(--border);
+            border-radius: 18px; overflow: hidden;
+            max-width: 680px; margin: 0 auto;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.6);
+            animation: fadeUp 0.8s ease 0.8s both; text-align: left;
+        }
+        .editor-bar {
+            background: #0f1e2e; padding: 13px 18px;
+            display: flex; align-items: center; gap: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .dot-r{width:12px;height:12px;border-radius:50%;background:#FF5F57}
+        .dot-y{width:12px;height:12px;border-radius:50%;background:#FEBC2E}
+        .dot-g{width:12px;height:12px;border-radius:50%;background:#28C840}
+        .editor-name { color: var(--muted); font-size: 0.8rem; margin-left: 8px; font-family: 'Fira Code', monospace; }
+        .editor-body { padding: 22px 24px; font-family: 'Fira Code', monospace; font-size: 0.87rem; line-height: 1.9; }
+        .cl { display: flex; gap: 18px; opacity: 0; animation: codeIn 0.4s ease forwards; }
+        .ln { color: #2a4a6a; user-select: none; min-width: 18px; text-align: right; }
+        .kw{color:#C792EA} .str{color:#C3E88D} .fn{color:#82AAFF}
+        .cm{color:#4a6a7a;font-style:italic} .vr{color:#F78C6C} .out{color:#00C8FF}
+        .cursor { display:inline-block; width:2px; height:1em; background:var(--accent); animation:blink 1s infinite; vertical-align:text-bottom; }
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+        @keyframes codeIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+
+        section { padding: 100px 5%; }
+        .sec-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(74,144,226,0.1); border: 1px solid var(--border);
+            padding: 6px 16px; border-radius: 50px;
+            font-size: 0.8rem; color: var(--blue-light); margin-bottom: 16px;
+        }
+        .sec-title { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; margin-bottom: 14px; line-height: 1.2; }
+        .sec-sub { color: var(--muted); font-size: 1rem; line-height: 1.75; max-width: 580px; }
+        .reveal { opacity: 0; transform: translateY(28px); transition: all 0.65s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        .roadmap { background: var(--navy-2); }
+        .roadmap-header { text-align: center; margin-bottom: 60px; }
+        .roadmap-header .sec-sub { margin: 0 auto; }
+        .roadmap-grid {
+            display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+            gap: 22px; max-width: 1100px; margin: 0 auto;
+        }
+        .r-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px 22px; text-align: center;
+            transition: all 0.35s; position: relative; overflow: hidden;
+            opacity: 0; transform: translateY(25px);
+        }
+        .r-card.visible { opacity: 1; transform: translateY(0); transition: opacity 0.5s ease, transform 0.5s ease; }
+        .r-card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background:linear-gradient(90deg,var(--blue),var(--accent)); }
+        .r-card:hover { transform:translateY(-8px); border-color:var(--blue); box-shadow:0 16px 45px rgba(74,144,226,0.18); }
+        .r-num {
+            width:40px;height:40px;background:linear-gradient(135deg,var(--blue),var(--accent));
+            border-radius:50%;display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:0.9rem;margin:0 auto 14px;
+        }
+        .r-card h3 { font-size:1rem;font-weight:700;margin-bottom:9px; }
+        .r-card p { font-size:0.85rem;color:var(--muted);line-height:1.6; }
+        .r-badge { display:inline-block;margin-top:12px;padding:4px 12px;border-radius:50px;font-size:0.73rem;font-weight:600; }
+        .bg-begin{background:rgba(0,229,160,.14);color:#00E5A0}
+        .bg-core{background:rgba(74,144,226,.14);color:#6BAEFF}
+        .bg-adv{background:rgba(255,184,0,.14);color:#FFB800}
+        .bg-proj{background:rgba(255,107,107,.14);color:#FF6B6B}
+
+        .stats { background:var(--navy); text-align:center; }
+        .stats-grid {
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+            gap:24px;max-width:900px;margin:55px auto 0;
+        }
+        .stat-card {
+            background:var(--card-bg);border:1px solid var(--border);
+            border-radius:20px;padding:34px 22px;transition:all 0.35s;
+            opacity:0;transform:scale(0.9);
+        }
+        .stat-card.visible{opacity:1;transform:scale(1);transition:all 0.5s ease;}
+        .stat-card:hover{border-color:var(--blue);transform:translateY(-5px);}
+        .stat-icon{font-size:2rem;margin-bottom:10px;}
+        .stat-num{
+            font-size:2.8rem;font-weight:800;line-height:1;margin-bottom:6px;
+            background:linear-gradient(135deg,var(--blue),var(--accent));
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+        }
+        .stat-lbl{color:var(--muted);font-size:0.88rem;}
+
+        .learn{background:var(--navy-2);}
+        .learn-grid{
+            display:grid;grid-template-columns:1fr 1fr;gap:60px;
+            align-items:center;max-width:1100px;margin:0 auto;
+        }
+        .l-step{
+            display:flex;gap:18px;align-items:flex-start;padding:18px;
+            background:var(--card-bg);border:1px solid var(--border);
+            border-radius:14px;transition:all 0.3s;cursor:pointer;margin-bottom:16px;
+        }
+        .l-step:hover,.l-step.active{border-color:var(--blue);background:rgba(74,144,226,0.08);}
+        .l-step:last-child{margin-bottom:0;}
+        .l-ico{
+            width:42px;height:42px;min-width:42px;
+            background:linear-gradient(135deg,var(--blue),var(--accent));
+            border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+        }
+        .l-step h4{font-size:0.95rem;font-weight:700;margin-bottom:5px;}
+        .l-step p{font-size:0.85rem;color:var(--muted);line-height:1.6;}
+        .qa-card{
+            background:var(--card-bg);border:1px solid var(--border);
+            border-radius:14px;padding:18px 22px;cursor:pointer;transition:all 0.3s;margin-bottom:12px;
+        }
+        .qa-card:last-child{margin-bottom:0;}
+        .qa-card:hover{border-color:var(--blue);}
+        .qa-q{display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:0.93rem;}
+        .qa-q i{color:var(--blue);transition:transform 0.3s;}
+        .qa-card.open .qa-q i{transform:rotate(180deg);}
+        .qa-a{max-height:0;overflow:hidden;transition:max-height 0.35s ease;font-size:0.86rem;color:var(--muted);line-height:1.7;}
+        .qa-card.open .qa-a{max-height:150px;padding-top:12px;}
+
+        .practice{background:var(--navy);}
+        .practice-header{text-align:center;margin-bottom:50px;}
+        .practice-header .sec-sub{margin:0 auto;}
+        .prac-grid{
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+            gap:22px;max-width:1000px;margin:0 auto;
+        }
+        .prac-card{
+            background:var(--card-bg);border:1px solid var(--border);
+            border-radius:20px;padding:26px;transition:all 0.35s;
+        }
+        .prac-card:hover{transform:translateY(-5px);border-color:var(--blue);box-shadow:0 14px 45px rgba(74,144,226,0.15);}
+        .prac-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+        .diff{padding:4px 12px;border-radius:50px;font-size:0.73rem;font-weight:600;}
+        .d-easy{background:rgba(0,229,160,.14);color:#00E5A0}
+        .d-med{background:rgba(255,184,0,.14);color:#FFB800}
+        .d-hard{background:rgba(255,107,107,.14);color:#FF6B6B}
+        .prac-lang{font-size:0.8rem;color:var(--muted);}
+        .prac-card h3{font-size:1rem;font-weight:700;margin-bottom:9px;}
+        .prac-card p{font-size:0.86rem;color:var(--muted);line-height:1.6;margin-bottom:18px;}
+        .btn-solve{
+            display:inline-flex;align-items:center;gap:7px;
+            padding:9px 18px;background:rgba(74,144,226,.13);
+            border:1px solid var(--border);color:var(--blue-light);
+            border-radius:9px;font-size:0.86rem;font-weight:600;
+            cursor:pointer;text-decoration:none;transition:all 0.2s;
+        }
+        .btn-solve:hover{background:var(--blue);color:white;border-color:var(--blue);}
+
+        .quiz-sec{background:var(--navy-2);}
+        .quiz-wrap{max-width:780px;margin:0 auto;}
+        .quiz-head{text-align:center;margin-bottom:40px;}
+        .quiz-head .sec-sub{margin:0 auto;}
+        .quiz-box{
+            background:var(--card-bg);border:1px solid var(--border);
+            border-radius:20px;padding:36px;
+        }
+        .q-bar{background:var(--navy-3);border-radius:50px;height:5px;margin-bottom:28px;}
+        .q-fill{width:33%;height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:50px;transition:width 0.5s;}
+        .q-meta{font-size:0.83rem;color:var(--muted);margin-bottom:10px;}
+        .q-text{font-size:1.08rem;font-weight:600;margin-bottom:22px;line-height:1.6;}
+        .q-code{
+            background:var(--navy);border:1px solid var(--border);
+            border-radius:12px;padding:16px 20px;
+            font-family:'Fira Code',monospace;font-size:0.86rem;
+            margin-bottom:22px;line-height:1.85;
+        }
+        .q-opts{display:flex;flex-direction:column;gap:11px;margin-bottom:22px;}
+        .q-opt{
+            padding:14px 20px;background:rgba(255,255,255,0.03);
+            border:1.5px solid var(--border);border-radius:12px;
+            cursor:pointer;transition:all 0.2s;font-size:0.93rem;
+            font-family:'Fira Code',monospace;text-align:left;color:var(--white);
+        }
+        .q-opt:hover{border-color:var(--blue);background:rgba(74,144,226,0.08);}
+        .q-opt.correct{border-color:#00E5A0;background:rgba(0,229,160,.1);color:#00E5A0;}
+        .q-opt.wrong{border-color:#FF6B6B;background:rgba(255,107,107,.1);color:#FF6B6B;}
+        .btn-qsub{
+            width:100%;padding:14px;
+            background:linear-gradient(135deg,var(--blue),var(--accent));
+            border:none;border-radius:12px;color:white;
+            font-size:1rem;font-weight:700;cursor:pointer;
+            font-family:'Sora',sans-serif;transition:all 0.3s;
+        }
+        .btn-qsub:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(74,144,226,0.42);}
+
+        .testi{background:var(--navy);}
+        .testi-head{text-align:center;margin-bottom:50px;}
+        .testi-head .sec-sub{margin:0 auto;}
+        .testi-grid{
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));
+            gap:22px;max-width:1100px;margin:0 auto 36px;
+        }
+        .t-card{
+            background:var(--card-bg);border:1px solid var(--border);
+            border-radius:20px;padding:26px;transition:all 0.35s;
+        }
+        .t-card:hover{border-color:var(--blue);transform:translateY(-4px);}
+        .stars{color:#FFB800;font-size:0.88rem;margin-bottom:14px;}
+        .t-text{font-size:0.93rem;line-height:1.72;color:var(--white-soft);margin-bottom:18px;}
+        .t-author{display:flex;align-items:center;gap:12px;}
+        .t-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;}
+        .t-info h4{font-size:0.92rem;font-weight:700;}
+        .t-info p{font-size:0.78rem;color:var(--muted);}
+        .happy{text-align:center;}
+        .happy span{font-size:1.05rem;color:var(--muted);}
+        .happy strong{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+        .why{background:var(--navy-2);}
+        .why-head{text-align:center;margin-bottom:50px;}
+        .why-head .sec-sub{margin:0 auto;}
+        .why-grid{
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+            gap:22px;max-width:1100px;margin:0 auto;
+        }
+        .w-card{
+            background:var(--card-bg);border:1px solid var(--border);
+            border-radius:20px;padding:30px 22px;text-align:center;transition:all 0.35s;
+        }
+        .w-card:hover{border-color:var(--blue);transform:translateY(-5px);box-shadow:0 14px 42px rgba(74,144,226,0.15);}
+        .w-ico{
+            width:62px;height:62px;
+            background:linear-gradient(135deg,rgba(74,144,226,0.18),rgba(0,200,255,0.08));
+            border:1px solid var(--border);border-radius:18px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.6rem;margin:0 auto 18px;transition:all 0.3s;
+        }
+        .w-card:hover .w-ico{background:linear-gradient(135deg,var(--blue),var(--accent));border-color:transparent;}
+        .w-card h3{font-size:1rem;font-weight:700;margin-bottom:9px;}
+        .w-card p{font-size:0.85rem;color:var(--muted);line-height:1.6;}
+
+        .fcta{
+            background:linear-gradient(135deg,var(--navy-2),var(--navy-3));
+            text-align:center;padding:90px 5%;
+            border-top:1px solid var(--border);position:relative;overflow:hidden;
+        }
+        .fcta::before{
+            content:'';position:absolute;
+            width:500px;height:500px;
+            background:radial-gradient(circle,rgba(74,144,226,0.1) 0%,transparent 70%);
+            top:50%;left:50%;transform:translate(-50%,-50%);
+        }
+        .fcta-inner{position:relative;z-index:1;}
+        .fcta h2{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;margin-bottom:14px;}
+        .fcta h2 span{background:linear-gradient(135deg,var(--blue),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .fcta p{color:var(--muted);font-size:1.05rem;margin-bottom:36px;}
+
+        footer{background:var(--navy);padding:50px 5% 28px;border-top:1px solid var(--border);}
+        .f-grid{
+            display:grid;grid-template-columns:2fr 1fr 1fr 1fr;
+            gap:40px;max-width:1100px;margin:0 auto 36px;
+        }
+        .f-brand p{color:var(--muted);font-size:0.88rem;line-height:1.7;margin-top:12px;}
+        .f-col h4{font-size:0.9rem;font-weight:700;margin-bottom:14px;}
+        .f-col a{display:block;color:var(--muted);text-decoration:none;font-size:0.86rem;margin-bottom:9px;transition:color 0.2s;}
+        .f-col a:hover{color:var(--blue-light);}
+        .f-bottom{text-align:center;padding-top:22px;border-top:1px solid var(--border);color:var(--muted);font-size:0.83rem;}
+
+        @media(max-width:900px){
+            .learn-grid{grid-template-columns:1fr;gap:30px;}
+            .f-grid{grid-template-columns:1fr 1fr;}
+        }
+        @media(max-width:768px){
+            .nav-links,.nav-auth{display:none;}
+            .hamburger{display:flex;}
+        }
+        @media(max-width:480px){
+            section{padding:70px 4%;}
+            .f-grid{grid-template-columns:1fr;}
+            .hero-btns{flex-direction:column;align-items:center;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+    <a href="index.html" class="logo">
+        <div class="logo-icon">🐍</div>Py<span>Quest</span>
+    </a>
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="studenttutorial.html">Tutorials</a></li>
+        <li><a href="studentquiz.html">Quiz</a></li>
+        <li><a href="studentsandbox.html">Sandbox</a></li>
+        <li><a href="gameindex.html">Games</a></li>
+    </ul>
+    <div class="nav-auth">
+        <a href="login.html" class="btn-nav-login">Login</a>
+        <a href="createpa.html" class="btn-nav-reg">Register</a>
+    </div>
+    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">🏠 Home</a>
+    <a href="studenttutorial.html">📚 Tutorials</a>
+    <a href="studentquiz.html">❓ Quiz</a>
+    <a href="studentsandbox.html">⚡ Sandbox</a>
+    <a href="gameindex.html">🎮 Games</a>
+    <a href="login.html">🔐 Login</a>
+    <a href="createpa.html">✨ Register</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+    <div class="hero-content">
+        <div class="hero-badge">
+            <div class="dot"></div>
+            <i class="fas fa-rocket"></i> Beginner Friendly Coding Platform
+        </div>
+        <h1 class="hero-title">
+            <span>Overcome the fear of</span>
+            <span class="hero-rotating-text" id="rotText">Problem Solving</span>
+        </h1>
+        <p class="hero-sub">
+            Learn programming through visual lessons, interactive games, and step-by-step practice.<br>
+            No experience needed. No fear allowed. Just learning. 🚀
+        </p>
+        <div class="hero-btns">
+            <a href="createpa.html" class="btn-primary"><i class="fas fa-rocket"></i> Start Learning Free</a>
+            <a href="#roadmap" class="btn-secondary"><i class="fas fa-play"></i> Try Demo</a>
+        </div>
+
+        <!-- Animated Code Editor -->
+        <div class="code-editor">
+            <div class="editor-bar">
+                <div class="dot-r"></div>
+                <div class="dot-y"></div>
+                <div class="dot-g"></div>
+                <span class="editor-name">welcome_to_pyquest.py</span>
+            </div>
+            <div class="editor-body" id="editorBody"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="roadmap" id="roadmap">
+    <div class="roadmap-header reveal">
+        <div class="sec-tag"><i class="fas fa-map-marked-alt"></i> Your Journey</div>
+        <h2 class="sec-title">Clear Step-by-Step Roadmap</h2>
+        <p class="sec-sub">Learn one topic at a time — no overload, no confusion. A proven beginner path.</p>
+    </div>
+    <div class="roadmap-grid">
+        <div class="r-card"><div class="r-num">1</div><h3>🐍 Python Basics</h3><p>Variables, syntax, input/output. Build your foundation the right way.</p><span class="r-badge bg-begin">Beginner</span></div>
+        <div class="r-card"><div class="r-num">2</div><h3>🔁 Logic & Control</h3><p>Conditions, loops, and logic. Think and solve like a real programmer.</p><span class="r-badge bg-core">Core</span></div>
+        <div class="r-card"><div class="r-num">3</div><h3>⚙️ Functions & OOP</h3><p>Write reusable, organized code with functions and classes.</p><span class="r-badge bg-core">Core</span></div>
+        <div class="r-card"><div class="r-num">4</div><h3>🌐 Web & JavaScript</h3><p>Build web pages with HTML, CSS, and make them interactive with JS.</p><span class="r-badge bg-adv">Advanced</span></div>
+        <div class="r-card"><div class="r-num">5</div><h3>🏗️ Real Projects</h3><p>Build projects you can show to the world. Put everything together.</p><span class="r-badge bg-proj">Projects</span></div>
+    </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+    <div class="reveal">
+        <div class="sec-tag"><i class="fas fa-chart-bar"></i> Numbers</div>
+        <h2 class="sec-title">Trusted by Learners Worldwide</h2>
+    </div>
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-num" data-target="500">0+</div><div class="stat-lbl">Practice Problems</div></div>
+        <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-num" data-target="120">0+</div><div class="stat-lbl">Topics Covered</div></div>
+        <div class="stat-card"><div class="stat-icon">👨‍💻</div><div class="stat-num" data-target="8500">0+</div><div class="stat-lbl">Students Joined</div></div>
+        <div class="stat-card"><div class="stat-icon">🎬</div><div class="stat-num" data-target="300">0+</div><div class="stat-lbl">Visual Lessons</div></div>
+    </div>
+</section>
+
+<!-- LEARN BY SEEING -->
+<section class="learn">
+    <div class="learn-grid">
+        <div>
+            <div class="sec-tag reveal"><i class="fas fa-eye"></i> Visual Learning</div>
+            <h2 class="sec-title reveal">Learn by Seeing,<br>Not Memorizing</h2>
+            <p class="sec-sub reveal" style="margin-bottom:28px">Animations and visuals make abstract code concepts easy to understand and remember longer.</p>
+            <div class="l-step active reveal"><div class="l-ico">👁️</div><div><h4>Watch It Happen</h4><p>See code run step by step with animations — not just plain text explanations.</p></div></div>
+            <div class="l-step reveal"><div class="l-ico">🧠</div><div><h4>Build Visual Memory</h4><p>Color-coded code helps you remember concepts far better than reading alone.</p></div></div>
+            <div class="l-step reveal"><div class="l-ico">✏️</div><div><h4>Practice Right After</h4><p>Every visual lesson ends with a small exercise that locks in your understanding.</p></div></div>
+        </div>
+        <div>
+            <div class="qa-card open reveal"><div class="qa-q">💬 What is a variable in Python?<i class="fas fa-chevron-down"></i></div><div class="qa-a">A variable is a named container that stores data. Writing x = 5 tells Python to store 5 in a box labeled "x". You can use or change it anytime later in your program.</div></div>
+            <div class="qa-card reveal"><div class="qa-q">💬 What is a loop and why use it?<i class="fas fa-chevron-down"></i></div><div class="qa-a">A loop repeats code automatically. Instead of writing print("Hi") 100 times, write it once in a loop and tell it to repeat. It saves time and keeps your code clean.</div></div>
+            <div class="qa-card reveal"><div class="qa-q">💬 What is a function?<i class="fas fa-chevron-down"></i></div><div class="qa-a">A function is a reusable block of code you name and call whenever needed. Like a recipe — write the steps once, use the recipe many times!</div></div>
+            <div class="qa-card reveal"><div class="qa-q">💬 Why should I learn programming?<i class="fas fa-chevron-down"></i></div><div class="qa-a">Programming is a superpower. Build apps, websites, and games. Every industry needs coders — it opens endless career doors and sharpens your logical thinking.</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- PRACTICE -->
+<section class="practice">
+    <div class="practice-header">
+        <div class="sec-tag reveal"><i class="fas fa-code"></i> Practice</div>
+        <h2 class="sec-title reveal">Build Confidence with Practice</h2>
+        <p class="sec-sub reveal">Focused challenges for beginners. No pressure — every attempt is progress.</p>
+    </div>
+    <div class="prac-grid">
+        <div class="prac-card reveal"><div class="prac-top"><span class="diff d-easy">Easy</span><span class="prac-lang">🐍 Python</span></div><h3>Hello, World!</h3><p>Write your first Python program that prints "Hello, World!" to the screen.</p><a href="studentsandbox.html" class="btn-solve"><i class="fas fa-play"></i> Solve Challenge</a></div>
+        <div class="prac-card reveal"><div class="prac-top"><span class="diff d-easy">Easy</span><span class="prac-lang">🐍 Python</span></div><h3>Sum of Two Numbers</h3><p>Take two numbers as input and print their sum. Practice variables and input.</p><a href="studentsandbox.html" class="btn-solve"><i class="fas fa-play"></i> Solve Challenge</a></div>
+        <div class="prac-card reveal"><div class="prac-top"><span class="diff d-med">Medium</span><span class="prac-lang">🐍 Python</span></div><h3>FizzBuzz</h3><p>Print 1-20. For multiples of 3 print "Fizz", for 5 print "Buzz", for both print "FizzBuzz".</p><a href="studentsandbox.html" class="btn-solve"><i class="fas fa-play"></i> Solve Challenge</a></div>
+    </div>
+</section>
+
+<!-- QUIZ PREVIEW -->
+<section class="quiz-sec">
+    <div class="quiz-wrap">
+        <div class="quiz-head reveal">
+            <div class="sec-tag"><i class="fas fa-brain"></i> Self Check</div>
+            <h2 class="sec-title">Test Your Knowledge</h2>
+            <p class="sec-sub">Quick quizzes to reinforce learning. No pressure — just check your progress!</p>
+        </div>
+        <div class="quiz-box reveal">
+            <div class="q-bar"><div class="q-fill" id="qFill"></div></div>
+            <p class="q-meta">Question <span id="qNum">1</span> of 3 &nbsp;•&nbsp; Python Basics</p>
+            <p class="q-text" id="qText"></p>
+            <div class="q-code" id="qCode"></div>
+            <div class="q-opts" id="qOpts"></div>
+            <button class="btn-qsub" id="qSub" onclick="submitQ()">Submit Answer</button>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testi">
+    <div class="testi-head reveal">
+        <div class="sec-tag"><i class="fas fa-heart"></i> Community</div>
+        <h2 class="sec-title">What Our Students Say</h2>
+        <p class="sec-sub">Real stories from beginners who turned their fear into confidence.</p>
+    </div>
+    <div class="testi-grid">
+        <div class="t-card reveal"><div class="stars">★★★★★</div><p class="t-text">"I was terrified of coding. After 2 weeks on PyQuest, I wrote my first Python program! The visual lessons are unlike anything else I've tried."</p><div class="t-author"><div class="t-av" style="background:linear-gradient(135deg,#4A90E2,#00C8FF)">R</div><div class="t-info"><h4>Riya Sharma</h4><p>CSE Student, 1st Year</p></div></div></div>
+        <div class="t-card reveal"><div class="stars">★★★★★</div><p class="t-text">"The coding games are so fun I didn't even feel like I was studying! Code Snake taught me loops without me even realizing it. Genius!"</p><div class="t-author"><div class="t-av" style="background:linear-gradient(135deg,#00E5A0,#4A90E2)">A</div><div class="t-info"><h4>Ahmed Hassan</h4><p>CS Student, 2nd Year</p></div></div></div>
+        <div class="t-card reveal"><div class="stars">★★★★★</div><p class="t-text">"PyQuest helped me decide to choose CSE as my major. The beginner-friendly roadmap made programming feel completely possible for the first time!"</p><div class="t-author"><div class="t-av" style="background:linear-gradient(135deg,#FFB800,#FF6B6B)">S</div><div class="t-info"><h4>Sofia Rahman</h4><p>Prospective CS Student</p></div></div></div>
+    </div>
+    <div class="happy reveal"><span>😊 </span><strong>8,500+</strong><span> Happy Learners and Counting!</span></div>
+</section>
+
+<!-- WHY PYQUEST -->
+<section class="why">
+    <div class="why-head reveal">
+        <div class="sec-tag"><i class="fas fa-question-circle"></i> Why Us?</div>
+        <h2 class="sec-title">Why Choose PyQuest?</h2>
+        <p class="sec-sub">We built PyQuest because we know what it feels like to be lost in code.</p>
+    </div>
+    <div class="why-grid">
+        <div class="w-card reveal"><div class="w-ico">😌</div><h3>No Fear Learning</h3><p>Every concept broken into tiny easy steps. Zero judgment, zero pressure.</p></div>
+        <div class="w-card reveal"><div class="w-ico">🔍</div><h3>Complex Simplified</h3><p>Hard topics explained in simple words with real-life examples you actually get.</p></div>
+        <div class="w-card reveal"><div class="w-ico">⏰</div><h3>Learn at Your Pace</h3><p>No deadlines, no rush. Go as fast or slow as you need. It's your journey.</p></div>
+        <div class="w-card reveal"><div class="w-ico">🎨</div><h3>Visual + Practice</h3><p>See it, understand it, then practice it. The most powerful way to learn code.</p></div>
+        <div class="w-card reveal"><div class="w-ico">🎮</div><h3>Learn by Playing</h3><p>Real coding games that teach logic and programming through actual gameplay — not MCQs.</p></div>
+    </div>
+</section>
+
+<!-- FOOTER CTA -->
+<section class="fcta">
+    <div class="fcta-inner">
+        <h2>Learn. Practice. <span>Grow with PyQuest</span></h2>
+        <p>Join thousands of students who turned their fear into confidence.</p>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+            <a href="createpa.html" class="btn-primary"><i class="fas fa-rocket"></i> Start for Free</a>
+            <a href="login.html" class="btn-secondary"><i class="fas fa-sign-in-alt"></i> Login</a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="f-grid">
+        <div class="f-brand">
+            <a href="index.html" class="logo"><div class="logo-icon">🐍</div>Py<span>Quest</span></a>
+            <p>Making programming less scary, one visual lesson at a time. Built for beginners, by people who remember being one.</p>
+        </div>
+        <div class="f-col"><h4>Learn</h4>
+            <a href="studenttutorial.html">Tutorials</a>
+            <a href="studentsandbox.html">Sandbox</a>
+            <a href="studentquiz.html">Quizzes</a>
+        </div>
+        <div class="f-col"><h4>Play</h4>
+            <a href="gameindex.html">All Games</a>
+            <a href="gameindex.html">Code Snake</a>
+            <a href="gameindex.html">Debug Mystery</a>
+        </div>
+        <div class="f-col"><h4>Account</h4>
+            <a href="login.html">Login</a>
+            <a href="createpa.html">Register</a>
+            <a href="#">About</a>
+        </div>
+    </div>
+    <div class="f-bottom">© 2025 PyQuest. Built with 💙 for students who dare to learn.</div>
+</footer>
+
+<script>
+    // NAVBAR SCROLL
+    window.addEventListener('scroll', () => {
+        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // HAMBURGER
+    document.getElementById('hamburger').addEventListener('click', () => {
+        document.getElementById('mobileMenu').classList.toggle('open');
+    });
+
+    // ROTATING TEXT
+    const words = ['Problem Solving','Coding Skills','Programming','Logic Building','Career Choice'];
+    let wi = 0;
+    const rotEl = document.getElementById('rotText');
+    rotEl.style.transition = 'all 0.4s ease';
+    setInterval(() => {
+        rotEl.style.opacity = '0';
+        rotEl.style.transform = 'translateY(16px)';
+        setTimeout(() => {
+            wi = (wi + 1) % words.length;
+            rotEl.textContent = words[wi];
+            rotEl.style.opacity = '1';
+            rotEl.style.transform = 'translateY(0)';
+        }, 380);
+    }, 2600);
+
+    // CODE EDITOR ANIMATION
+    const lines = [
+        {n:'1', c:'<span class="cm"># Welcome to PyQuest! 🐍</span>'},
+        {n:'2', c:''},
+        {n:'3', c:'<span class="kw">def</span> <span class="fn">start_journey</span>(name):'},
+        {n:'4', c:'&nbsp;&nbsp;&nbsp;&nbsp;<span class="vr">greeting</span> = <span class="str">"Hello, "</span> + name'},
+        {n:'5', c:'&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> greeting + <span class="str">" 🚀 Let\'s code!"</span>'},
+        {n:'6', c:''},
+        {n:'7', c:'<span class="vr">result</span> = <span class="fn">start_journey</span>(<span class="str">"You"</span>)'},
+        {n:'8', c:'<span class="fn">print</span>(result)'},
+        {n:'9', c:''},
+        {n:'10', c:'<span class="cm"># Output ↓</span>'},
+        {n:'11', c:'<span class="out">Hello, You 🚀 Let\'s code!</span>'},
+    ];
+    const eb = document.getElementById('editorBody');
+    lines.forEach((l, i) => {
+        const d = document.createElement('div');
+        d.className = 'cl';
+        d.style.animationDelay = `${i * 0.12}s`;
+        d.innerHTML = `<span class="ln">${l.n}</span><span>${l.c}${i === 10 ? '<span class="cursor"></span>' : ''}</span>`;
+        eb.appendChild(d);
+    });
+
+    // SCROLL REVEAL
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal,.r-card,.stat-card,.w-card,.prac-card,.t-card').forEach(el => obs.observe(el));
+
+    // COUNTER ANIMATION
+    let counted = false;
+    const cobs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting && !counted) {
+                counted = true;
+                document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+                    const target = +el.dataset.target;
+                    const start = performance.now();
+                    const dur = 1800;
+                    function upd(now) {
+                        const p = Math.min((now - start) / dur, 1);
+                        const ease = 1 - Math.pow(1 - p, 3);
+                        el.textContent = Math.floor(ease * target).toLocaleString() + '+';
+                        if (p < 1) requestAnimationFrame(upd);
+                    }
+                    requestAnimationFrame(upd);
+                });
+            }
+        });
+    }, { threshold: 0.3 });
+    const sg = document.getElementById('statsGrid');
+    if (sg) cobs.observe(sg);
+
+    // QA ACCORDION
+    document.querySelectorAll('.qa-card').forEach(c => {
+        c.addEventListener('click', () => c.classList.toggle('open'));
+    });
+
+    // MINI QUIZ
+    const qData = [
+        { q: 'What will this code output?', code: '<span class="vr">x</span> = <span style="color:#F78C6C">10</span>\n<span class="vr">y</span> = <span style="color:#F78C6C">3</span>\n<span class="fn">print</span>(x % y)', opts: ['3', '1', '0', '10'], ans: 1 },
+        { q: 'What does this loop print?', code: '<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span style="color:#F78C6C">3</span>):\n    <span class="fn">print</span>(i)', opts: ['1 2 3', '0 1 2', '0 1 2 3', '1 2'], ans: 1 },
+        { q: 'What does len() return here?', code: '<span class="vr">fruits</span> = [<span class="str">"apple"</span>, <span class="str">"mango"</span>, <span class="str">"banana"</span>]\n<span class="fn">print</span>(<span class="fn">len</span>(fruits))', opts: ['2', '4', '3', '0'], ans: 2 },
+    ];
+    let curQ = 0, selOpt = null;
+
+    function loadQ(i) {
+        const q = qData[i];
+        document.getElementById('qNum').textContent = i + 1;
+        document.getElementById('qFill').style.width = `${(i / qData.length) * 100}%`;
+        document.getElementById('qText').textContent = q.q;
+        document.getElementById('qCode').innerHTML = q.code;
+        const oc = document.getElementById('qOpts');
+        oc.innerHTML = '';
+        selOpt = null;
+        q.opts.forEach((o, idx) => {
+            const b = document.createElement('button');
+            b.className = 'q-opt';
+            b.textContent = o;
+            b.onclick = () => {
+                document.querySelectorAll('.q-opt').forEach(x => { x.style.borderColor = 'var(--border)'; x.style.background = ''; });
+                b.style.borderColor = 'var(--blue)';
+                b.style.background = 'rgba(74,144,226,0.1)';
+                selOpt = idx;
+            };
+            oc.appendChild(b);
+        });
+        document.getElementById('qSub').textContent = 'Submit Answer';
+        document.getElementById('qSub').onclick = submitQ;
+    }
+
+    function submitQ() {
+        if (selOpt === null) { alert('Please select an answer!'); return; }
+        const q = qData[curQ];
+        document.querySelectorAll('.q-opt').forEach((b, i) => {
+            b.style.pointerEvents = 'none';
+            if (i === q.ans) b.classList.add('correct');
+            else if (i === selOpt) b.classList.add('wrong');
+        });
+        const sb = document.getElementById('qSub');
+        if (curQ < qData.length - 1) {
+            sb.textContent = 'Next Question →';
+            sb.onclick = () => { curQ++; loadQ(curQ); };
+        } else {
+            sb.textContent = '🎉 Try Full Quiz';
+            sb.onclick = () => window.location.href = 'studentquiz.html';
+        }
+    }
+    loadQ(0);
+</script>
+</body>
+</html>
