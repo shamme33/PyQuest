@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": ".vscode/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/$",
+      "dest": ".vscode/login.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": ".vscode/$1"
+    }
+  ]
+}
