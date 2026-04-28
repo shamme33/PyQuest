@@ -1095,7 +1095,35 @@ tbody td{padding:13px 16px;font-size:0.85rem;vertical-align:middle;}
 <!-- ================================================
      JAVASCRIPT
 ================================================ -->
-<script>
+    <script type="module">
+        // Import Firebase Auth
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        // Firebase config
+        const firebaseConfig = {
+          apiKey: "AIzaSyCLRSgHi7WDH9AnfEqWECSX9pvoo7JuQbM",
+          authDomain: "pyquest-9f8ba.firebaseapp.com",
+          projectId: "pyquest-9f8ba",
+          storageBucket: "pyquest-9f8ba.firebasestorage.app",
+          messagingSenderId: "63902666248",
+          appId: "1:63902666248:web:d280f253f808fc9a19cbbd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.firebaseAuth = auth;
+        window.signOut = signOut;
+
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+    <script>
 /* =========================================
    DATA
 ========================================= */
@@ -1573,8 +1601,14 @@ function showToast(msg, isErr=false){
    LOGOUT
 ========================================= */
 function logout(){
-  localStorage.removeItem('pyquest_current_user');
-  window.location.href='login.html';
+  window.signOut(window.firebaseAuth).then(() => {
+    localStorage.removeItem('pyquest_current_user');
+    window.location.href='login.html';
+  }).catch((error) => {
+    console.error('Sign out error:', error);
+    localStorage.removeItem('pyquest_current_user');
+    window.location.href='login.html';
+  });
 }
 
 /* =========================================

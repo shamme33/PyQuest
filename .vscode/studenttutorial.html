@@ -37,6 +37,10 @@ body{font-family:'Sora',sans-serif;background:var(--navy);color:var(--white);dis
 .search-bar{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:8px 14px;}
 .search-bar input{background:none;border:none;color:var(--white);font-size:0.88rem;outline:none;width:200px;font-family:'Sora',sans-serif;}
 .search-bar input::placeholder{color:var(--muted);}.search-bar i{color:var(--muted);}
+.api-status{font-size:0.78rem;font-weight:600;color:var(--white);background:rgba(255,255,255,0.08);padding:6px 10px;border:1px solid rgba(74,144,226,0.2);border-radius:12px;display:inline-flex;align-items:center;gap:8px;}
+.api-status.online{color:#00E5A0;border-color:rgba(0,229,160,0.3);background:rgba(0,229,160,0.08);}
+.api-status.offline{color:#FFB800;border-color:rgba(255,184,0,0.3);background:rgba(255,184,0,0.08);}
+.api-status.failed{color:#FF6B6B;border-color:rgba(255,107,107,0.3);background:rgba(255,107,107,0.08);}
 .page-content{padding:28px 32px;flex:1;}
 .tut-layout{display:grid;grid-template-columns:240px 1fr;gap:20px;}
 .cat-panel{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;height:fit-content;position:sticky;top:88px;}
@@ -79,6 +83,8 @@ body{font-family:'Sora',sans-serif;background:var(--navy);color:var(--white);dis
 .td-section h3 i{color:var(--blue);}
 .td-section p{color:var(--muted);font-size:0.9rem;line-height:1.75;margin-bottom:12px;}
 .td-section p:last-child{margin-bottom:0;}
+.td-loading{color:var(--muted);font-style:italic;}
+.td-error{color:#FF6B6B;font-weight:700;}
 .code-block{background:#07111d;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:14px 0;}
 .cb-bar{background:#0f1e2e;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
 .cb-lang{font-size:0.75rem;color:var(--muted);font-family:'Fira Code',monospace;}
@@ -125,6 +131,7 @@ body{font-family:'Sora',sans-serif;background:var(--navy);color:var(--white);dis
     <div class="topbar-left">
       <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
       <div class="breadcrumb">PyQuest / <span id="bcText">Tutorials</span></div>
+      <div id="apiStatus" class="api-status">Loading tutorial backend...</div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
       <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Search topics..." oninput="filterTopics(this.value)"></div>
@@ -161,10 +168,167 @@ const LANGS = {
   cpp:{name:'C++',ico:'🔧',color:'rgba(0,200,255,0.1)',badge:'#00C8FF',desc:'C with superpowers! OOP, templates, and the STL make C++ incredibly powerful.',topics:[{id:'cpp-intro',title:'Introduction to C++',desc:'C vs C++ differences',diff:'Beginner',done:false},{id:'cpp-setup',title:'Setup & IDE',desc:'Install C++ compiler and IDE',diff:'Beginner',done:false},{id:'cpp-syn',title:'Basic Syntax',desc:'cout, cin, namespaces',diff:'Beginner',done:false},{id:'cpp-vars',title:'Variables & Types',desc:'Data types and type casting',diff:'Beginner',done:false},{id:'cpp-ops',title:'Operators',desc:'All operator types in C++',diff:'Beginner',done:false},{id:'cpp-cond',title:'Conditions & Loops',desc:'Control flow in C++',diff:'Beginner',done:false},{id:'cpp-func',title:'Functions',desc:'Function overloading, default params',diff:'Intermediate',done:false},{id:'cpp-arr',title:'Arrays & Vectors',desc:'Static arrays and STL vectors',diff:'Intermediate',done:false},{id:'cpp-oop',title:'OOP Basics',desc:'Classes, objects, encapsulation',diff:'Intermediate',done:false},{id:'cpp-inh',title:'Inheritance',desc:'Base and derived classes',diff:'Advanced',done:false},{id:'cpp-poly',title:'Polymorphism',desc:'Virtual functions and overriding',diff:'Advanced',done:false},{id:'cpp-stl',title:'STL Containers',desc:'vector, map, set, stack, queue',diff:'Advanced',done:false}]}
 };
 const TOPIC_DETAIL = {
+  'py-intro':{title:'Introduction to Python',lang:'Python',langIco:'🐍',diff:'Beginner',time:'8 min',explanation:`Python is a popular programming language used for web development, data analysis, automation, and more. It is easy to read and write, which makes it a great first language for beginners.
+
+You learn Python first to focus on problem solving instead of complicated syntax.`,example:`# This code prints a friendly message
+print("Welcome to Python!")
+
+name = "Aisha"
+print("Hello,", name)`,tip:'Python uses indentation and simple statements. Keep your code clean with consistent spaces and descriptive names.',mistake:`# ❌ Wrong — missing quotes around text
+message = Hello Python
+
+# ✅ Correct
+message = "Hello Python"`,practice:'Write a short Python program that prints your name and one sentence about why you want to learn coding.'},
+  'py-setup':{title:'Setup & Installation',lang:'Python',langIco:'🐍',diff:'Beginner',time:'12 min',explanation:`Installing Python lets you run code on your own computer. After setup, you can write Python files, run them in the terminal, and start learning with real practice programs.
+
+A good setup is the first step before you begin writing code every day.`,example:`# Verify Python in a terminal or command prompt
+# Type:
+# python --version
+
+# Then create hello.py with:
+print("Hello from Python")
+
+# Run it with:
+# python hello.py`,tip:'Install the latest stable Python version and add it to your PATH if the installer asks. Then verify the installation by checking python --version.',mistake:`# ❌ Wrong — saving a file with the wrong extension
+hello.txt
+
+# ✅ Correct
+hello.py`,practice:'Install Python, create hello.py, and run it from the terminal to confirm the setup works.'},
+  'py-syntax':{title:'Python Syntax',lang:'Python',langIco:'🐍',diff:'Beginner',time:'10 min',explanation:`Python syntax is the set of rules for writing code. It uses indentation instead of braces and reads almost like plain English.
+
+Learning syntax helps you avoid errors and write programs that are easy to understand.`,example:`# Python uses indentation for blocks
+if 5 > 2:
+    print("Five is greater than two")
+
+# Comments start with #
+# This is a comment`,tip:'Indentation is required in Python. Use the same number of spaces for each block, usually 4 spaces.',mistake:`# ❌ Wrong — inconsistent indentation
+if 5 > 2:
+ print("Yes")
+
+# ✅ Correct
+if 5 > 2:
+    print("Yes")`,practice:'Write an if statement that checks whether a number is positive and prints a message if it is.'},
+  'py-types':{title:'Python Data Types',lang:'Python',langIco:'🐍',diff:'Beginner',time:'12 min',explanation:`Data types describe the kind of values you store in variables. Python supports strings, numbers, booleans, and more.
+
+Knowing data types helps you choose the right values and avoid errors when values are combined or compared.`,example:`name = "Lina"      # String
+age = 24             # Integer
+price = 12.99        # Float
+is_active = True     # Boolean
+
+print(type(name))
+print(type(age))`,tip:'Python figures out the type automatically. Use type() to inspect values while learning.',mistake:`# ❌ Wrong — adding text and numbers without converting
+total = "Age: " + 20
+
+# ✅ Correct
+total = "Age: " + str(20)`,practice:'Create variables of type string, integer, float, and boolean. Print each value and its type.'},
+  'py-ops':{title:'Python Operators',lang:'Python',langIco:'🐍',diff:'Beginner',time:'12 min',explanation:`Operators perform actions with values. Python has math operators, comparison operators, and logical operators.
+
+Operators are how you build expressions and make your code do useful work.`,example:`x = 10
+y = 3
+print(x + y)   # 13
+print(x * y)   # 30
+print(x > y)   # True
+print(x == y)  # False`,tip:'Remember that == checks equality while = assigns a value. Use parentheses to make complex expressions easy to read.',mistake:`# ❌ Wrong — using = instead of == in a condition
+if x = 5:
+    print("Yes")
+
+# ✅ Correct
+if x == 5:
+    print("Yes")`,practice:'Compare two numbers and print whether the first is larger, smaller, or equal.'},
+  'py-io':{title:'Python Input & Output',lang:'Python',langIco:'🐍',diff:'Beginner',time:'12 min',explanation:`Input and output let your programs interact with users. Use input() to read text and print() to show results.
+
+This makes your programs more interactive and useful.`,example:`name = input("What is your name? ")
+print("Hello, " + name + "!")
+
+age = int(input("How old are you? "))
+print("You are", age, "years old.")`,tip:'input() always returns text. Convert it with int() or float() before using it in calculations.',mistake:`# ❌ Wrong — adding user input to numbers without converting
+value = input("Enter a number: ")
+print(value + 5)
+
+# ✅ Correct
+value = int(input("Enter a number: "))
+print(value + 5)`,practice:'Ask the user for two numbers, add them, and print the sum.'},
+  'py-cond':{title:'Python Conditions',lang:'Python',langIco:'🐍',diff:'Beginner',time:'15 min',explanation:`Conditions let your program make decisions. Use if, elif, and else to run different code depending on whether a statement is true.
+
+This is how programs choose different paths and behave differently depending on input.`,example:`score = 75
+if score >= 90:
+    print("Excellent")
+elif score >= 70:
+    print("Good job")
+else:
+    print("Keep practicing")`,tip:'Each if, elif, and else block must use the same indentation, and only one block runs in order from top to bottom.',mistake:`# ❌ Wrong — separate if statements instead of elif
+if x > 10:
+    print("Big")
+if x > 5:
+    print("Medium")
+
+# ✅ Correct
+if x > 10:
+    print("Big")
+elif x > 5:
+    print("Medium")`,practice:'Ask for a temperature and print whether it is cold, warm, or hot.'},
+  'py-func':{title:'Python Functions',lang:'Python',langIco:'🐍',diff:'Intermediate',time:'15 min',explanation:`Functions group code into reusable blocks. Define a function once and call it whenever you need the same behavior.
+
+This keeps your code shorter, easier to read, and easier to fix.`,example:`def greet(name):
+    print("Hello, " + name + "!")
+
+greet("Mira")
+greet("Ali")`,tip:'Name functions with action words like calculate_total or show_message. Keep each function focused on one task.',mistake:`# ❌ Wrong — forgetting parentheses when calling a function
+def say_hi():
+    print("Hi")
+
+say_hi  # missing ()
+
+# ✅ Correct
+say_hi()`,practice:'Create a function that prints whether a number is even or odd and call it for two different numbers.'},
+  'py-list':{title:'Python Lists',lang:'Python',langIco:'🐍',diff:'Intermediate',time:'15 min',explanation:`Lists let you store multiple values in one variable. You can add, remove, and access items by position.
+
+Lists are a powerful way to work with groups of related data.`,example:`fruits = ["apple", "banana", "cherry"]
+print(fruits[0])  # apple
+fruits.append("mango")
+print(fruits)`,tip:'List indexes start at 0, so the first item is position 0, the second is position 1, and so on.',mistake:`# ❌ Wrong — using an invalid index
+print(fruits[3])  # error if list has only 3 items
+
+# ✅ Correct
+print(fruits[2])`,practice:'Make a list of your favorite foods, print the first item, and add one more food.'},
+  'py-dict':{title:'Python Dictionaries',lang:'Python',langIco:'🐍',diff:'Intermediate',time:'15 min',explanation:`Dictionaries store values using keys instead of positions. They are useful when you want to look up information by label.
+
+This makes it easy to organize related data like names, scores, or settings.`,example:`student = {"name": "Sara", "age": 17, "grade": "A"}
+print(student["name"])
+student["age"] = 18
+print(student)`,tip:'Use meaningful keys such as name, score, or email. Dictionaries are best when you need to look up values by label.',mistake:`# ❌ Wrong — using a numeric index with a dictionary
+print(student[0])
+
+# ✅ Correct
+print(student["name"])`,practice:'Create a dictionary for a book with title, author, and year. Print the author and update the year.'},
   'py-vars':{title:'Variables in Python',lang:'Python',langIco:'🐍',diff:'Beginner',time:'10 min',explanation:`A variable is a named container that stores a value in memory. In Python, you don't need to declare the type — Python figures it out automatically!\n\nThink of a variable like a labeled box: you put something in it, give it a name, and use that name to find it later.`,example:`# Creating variables\nname = "Alice"       # String variable\nage = 20             # Integer variable\ngpa = 3.8            # Float variable\nis_student = True    # Boolean variable\n\n# Using variables\nprint(name)      # Output: Alice\nprint(age)       # Output: 20\nprint(gpa)       # Output: 3.8`,tip:'Variable names should be descriptive. Use snake_case (my_name) not camelCase in Python. Variable names cannot start with a number!',mistake:`# ❌ Wrong — variable name starts with number\n1name = "Alice"\n\n# ❌ Wrong — using spaces in name\nmy name = "Alice"\n\n# ✅ Correct\nmy_name = "Alice"\nfirst_name = "Alice"`,practice:'Create 3 variables: your name, your age, and your favorite programming language. Print all three on separate lines.'},
   'py-loops':{title:'Loops in Python',lang:'Python',langIco:'🐍',diff:'Intermediate',time:'15 min',explanation:`Loops allow you to repeat a block of code multiple times without writing it over and over. Python has two main loop types:\n\n• for loop — repeats for each item in a sequence\n• while loop — repeats as long as a condition is true`,example:`# for loop — count from 0 to 4\nfor i in range(5):\n    print(i)\n# Output: 0  1  2  3  4\n\n# for loop — iterate over a list\nfruits = ["apple", "mango", "banana"]\nfor fruit in fruits:\n    print("I love", fruit)\n\n# while loop — count up\ncount = 0\nwhile count < 3:\n    print("Count:", count)\n    count += 1    # Don't forget to increment!`,tip:"Always make sure a while loop has a way to stop! If the condition never becomes False, your program will run forever (infinite loop).",mistake:`# ❌ Infinite loop — missing increment!\ncount = 0\nwhile count < 5:\n    print(count)\n    # forgot: count += 1\n\n# ✅ Correct\ncount = 0\nwhile count < 5:\n    print(count)\n    count += 1`,practice:'Write a loop that prints all even numbers from 2 to 20. Use both a for loop and a while loop version.'}
 };
+const API_BASE = '/api';
 let currentLang = 'python';
+let tutorialData = null;
+
+async function loadTutorialDatabase(){
+  const statusEl = document.getElementById('apiStatus');
+  try {
+    const response = await fetch(`${API_BASE}/tutorials`);
+    if (!response.ok) throw new Error('API load failed');
+    tutorialData = await response.json();
+    if (tutorialData.languages) LANGS = tutorialData.languages;
+    if (tutorialData.details) TOPIC_DETAIL = tutorialData.details;
+    if (statusEl) {
+      statusEl.textContent = 'Tutorial backend loaded';
+      statusEl.classList.add('online');
+    }
+  } catch (err) {
+    console.warn('Tutorial API unavailable, using static fallback.', err);
+    if (statusEl) {
+      statusEl.textContent = 'Using local fallback data';
+      statusEl.classList.add('offline');
+    }
+  }
+}
+
 function selectLang(lang){
   currentLang = lang;
   document.querySelectorAll('.cat-item').forEach(c=>c.classList.remove('active'));
@@ -258,7 +422,12 @@ function openTopic(id,lang){
           <p>${detail.practice}</p>
           <a href="studentsandbox.html" class="btn-try"><i class="fas fa-terminal"></i> Open Sandbox to Practice</a>
         </div>
+      </div>
+      <div class="td-section">
+        <h3><i class="fas fa-robot"></i> AI-Powered Lesson</h3>
+        <div id="tutorialContent"><p class="td-loading">Loading lesson...</p></div>
       </div>`;
+    loadTutorial(L.name, id);
   } else {
     document.getElementById('detailContent').innerHTML=`
       <div class="td-header">
@@ -283,7 +452,12 @@ function openTopic(id,lang){
           <p>Open the sandbox and experiment with ${topic.title} concepts. Try writing your own code and see what happens!</p>
           <a href="studentsandbox.html" class="btn-try"><i class="fas fa-terminal"></i> Open Sandbox</a>
         </div>
+      </div>
+      <div class="td-section">
+        <h3><i class="fas fa-robot"></i> AI-Powered Lesson</h3>
+        <div id="tutorialContent"><p class="td-loading">Loading lesson...</p></div>
       </div>`;
+    loadTutorial(L.name, id);
   }
 }
 function backToList(){
@@ -298,13 +472,46 @@ function highlightCode(code){
     .replace(/\b(def|class|if|else|elif|for|while|return|import|from|True|False|None|in|and|or|not|print|input|range|len|int|str|float)\b/g,'<span class="kw">$1</span>')
     .replace(/\b(\d+\.?\d*)\b/g,'<span class="num">$1</span>');
 }
+function renderTutorialContent(content){
+  const container = document.getElementById('tutorialContent');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="td-section"><p>${content.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')}</p></div>`;
+}
+function setTutorialLoading(message){
+  const container = document.getElementById('tutorialContent');
+  if (!container) return;
+  container.innerHTML = `<p class="td-loading">${message}</p>`;
+}
+async function loadTutorial(language, topicId){
+  setTutorialLoading('Loading lesson...');
+  try {
+    const response = await fetch(`${API_BASE}/explain`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topicId, language })
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch AI explanation.');
+    }
+    const data = await response.json();
+    renderTutorialContent(data.explanation || 'No explanation was returned.');
+  } catch (err) {
+    console.error(err);
+    const container = document.getElementById('tutorialContent');
+    if (container) {
+      container.innerHTML = `<p class="td-error">Unable to load remote lesson. Please try again later.</p>`;
+    }
+  }
+}
 function copyCode(btn){
   const code=btn.closest('.code-block').querySelector('pre').textContent;
   navigator.clipboard.writeText(code).then(()=>{btn.textContent='✅ Copied!';setTimeout(()=>btn.textContent='📋 Copy',2000);});
 }
-function init(){
+async function init(){
   const u=JSON.parse(localStorage.getItem('pyquest_current_user')||'{}');
   if(u.firstName){document.getElementById('sbNm').textContent=u.firstName+' '+(u.lastName||'');document.getElementById('sbAv').textContent=u.firstName[0].toUpperCase();}
+  await loadTutorialDatabase();
   selectLang('python');
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}

@@ -293,6 +293,65 @@
         <span id="toastMsg">Account created successfully!</span>
     </div>
 
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyCLRSgHi7WDH9AnfEqWECSX9pvoo7JuQbM",
+          authDomain: "pyquest-9f8ba.firebaseapp.com",
+          projectId: "pyquest-9f8ba",
+          storageBucket: "pyquest-9f8ba.firebasestorage.app",
+          messagingSenderId: "63902666248",
+          appId: "1:63902666248:web:d280f253f808fc9a19cbbd"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Make auth available globally
+        window.firebaseAuth = auth;
+    </script>
+    <script type="module">
+        // Import Firebase Auth
+        import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        // Firebase config
+        const firebaseConfig = {
+          apiKey: "AIzaSyCLRSgHi7WDH9AnfEqWECSX9pvoo7JuQbM",
+          authDomain: "pyquest-9f8ba.firebaseapp.com",
+          projectId: "pyquest-9f8ba",
+          storageBucket: "pyquest-9f8ba.firebasestorage.app",
+          messagingSenderId: "63902666248",
+          appId: "1:63902666248:web:d280f253f808fc9a19cbbd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.firebaseAuth = auth;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, redirect to dashboard based on role
+                const userData = JSON.parse(localStorage.getItem('pyquest_current_user') || '{}');
+                const role = userData.role;
+                if (role === 'admin') {
+                    window.location.href = 'Admin.html';
+                } else if (role === 'teacher') {
+                    window.location.href = 'Teacher.html';
+                } else {
+                    window.location.href = 'studentdashboard.html';
+                }
+            }
+        });
+    </script>
     <script>
         function toggleP(id, iconId) {
             const inp = document.getElementById(id);
@@ -337,7 +396,7 @@
             document.getElementById(id).classList.toggle('show', show);
         }
 
-        function handleRegister(e) {
+        async function handleRegister(e) {
             e.preventDefault();
             const fn    = document.getElementById('firstName').value.trim();
             const ln    = document.getElementById('lastName').value.trim();
@@ -364,26 +423,23 @@
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem('pyquest_users') || '[]');
-            if (users.find(u => u.email === email)) {
-                document.getElementById('errBanner').classList.add('show');
-                document.getElementById('errBannerText').textContent = 'An account with this email already exists.';
-                showErr('emailErr', true);
-                return;
-            }
-
             document.getElementById('regSpinner').style.display = 'block';
             document.getElementById('regIcon').style.display    = 'none';
             document.getElementById('regBtnText').textContent   = 'Creating account...';
             document.getElementById('regBtn').disabled          = true;
 
-            setTimeout(() => {
+            try {
+                const userCredential = await createUserWithEmailAndPassword(window.firebaseAuth, email, pass);
+                const user = userCredential.user;
+
+                // Store user data in localStorage
                 const newUser = {
-                    id: Date.now(),
+                    id: user.uid,
                     firstName: fn, lastName: ln, email, password: pass, role,
                     joinedAt: new Date().toISOString(),
                     progress: { topicsCompleted: 0, problemsSolved: 0, quizzesDone: 0, streak: 0 }
                 };
+                const users = JSON.parse(localStorage.getItem('pyquest_users') || '[]');
                 users.push(newUser);
                 localStorage.setItem('pyquest_users', JSON.stringify(users));
                 localStorage.setItem('pyquest_current_user', JSON.stringify(newUser));
@@ -397,7 +453,21 @@
                     else if (role === 'teacher') window.location.href = 'Teacher.html';
                     else                         window.location.href = 'studentdashboard.html';
                 }, 1500);
-            }, 1300);
+            } catch (error) {
+                document.getElementById('regSpinner').style.display = 'none';
+                document.getElementById('regIcon').style.display = 'inline';
+                document.getElementById('regBtn').disabled = false;
+                document.getElementById('regBtnText').textContent = 'Create Account';
+
+                if (error.code === 'auth/email-already-in-use') {
+                    document.getElementById('errBanner').classList.add('show');
+                    document.getElementById('errBannerText').textContent = 'User already exists. Please sign in';
+                    showErr('emailErr', true);
+                } else {
+                    document.getElementById('errBanner').classList.add('show');
+                    document.getElementById('errBannerText').textContent = 'Registration failed. Please try again.';
+                }
+            }
         }
     </script>
 </body>

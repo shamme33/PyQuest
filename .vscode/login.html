@@ -384,6 +384,43 @@
         <span id="toastMsg">Login successful!</span>
     </div>
 
+    <script type="module">
+        // Import Firebase Auth
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+        // Firebase config
+        const firebaseConfig = {
+          apiKey: "AIzaSyCLRSgHi7WDH9AnfEqWECSX9pvoo7JuQbM",
+          authDomain: "pyquest-9f8ba.firebaseapp.com",
+          projectId: "pyquest-9f8ba",
+          storageBucket: "pyquest-9f8ba.firebasestorage.app",
+          messagingSenderId: "63902666248",
+          appId: "1:63902666248:web:d280f253f808fc9a19cbbd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.firebaseAuth = auth;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, redirect to dashboard based on role
+                const userData = JSON.parse(localStorage.getItem('pyquest_current_user') || '{}');
+                const role = userData.role;
+                if (role === 'admin') {
+                    window.location.href = 'Admin.html';
+                } else if (role === 'teacher') {
+                    window.location.href = 'Teacher.html';
+                } else {
+                    window.location.href = 'studentdashboard.html';
+                }
+            }
+        });
+    </script>
     <script>
         // PASSWORD TOGGLE
         function togglePass() {
@@ -409,7 +446,7 @@
         }
 
         // HANDLE LOGIN
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             const email    = document.getElementById('email').value.trim();
             const pass     = document.getElementById('password').value;
@@ -423,18 +460,17 @@
             document.getElementById('loginText').textContent = 'Logging in...';
             document.getElementById('loginBtn').disabled = true;
 
-            setTimeout(() => {
-                // Check localStorage for registered users
+            try {
+                const userCredential = await signInWithEmailAndPassword(window.firebaseAuth, email, pass);
+                const user = userCredential.user;
+
+                // Check localStorage for user data
                 const users = JSON.parse(localStorage.getItem('pyquest_users') || '[]');
-                const user  = users.find(u => u.email === email && u.password === pass);
+                const userData = users.find(u => u.email === email);
 
-                document.getElementById('spinner').style.display = 'none';
-                document.getElementById('loginIcon').style.display = 'inline';
-                document.getElementById('loginBtn').disabled = false;
-
-                if (user) {
+                if (userData) {
                     // Override role with selected role at login
-                    const loginUser = { ...user, role: selRole };
+                    const loginUser = { ...userData, role: selRole };
                     localStorage.setItem('pyquest_current_user', JSON.stringify(loginUser));
 
                     if (document.getElementById('remember').checked) {
@@ -442,7 +478,7 @@
                     }
 
                     document.getElementById('loginText').textContent = '✓ Login Successful!';
-                    showToast('Welcome back, ' + user.firstName + '! 🎉');
+                    showToast('Welcome back, ' + userData.firstName + '! 🎉');
 
                     // ✅ Role-based redirect
                     setTimeout(() => {
@@ -454,28 +490,30 @@
                             window.location.href = 'studentdashboard.html';
                         }
                     }, 1500);
-
                 } else {
-                    // Allow demo credentials too
-                    if (email === 'demo@pyquest.com' && pass === 'demo123') {
-                        const demoUser = {
-                            firstName: 'Demo', lastName: 'User',
-                            email: 'demo@pyquest.com', role: selRole
-                        };
-                        localStorage.setItem('pyquest_current_user', JSON.stringify(demoUser));
-                        showToast('Demo login successful! 🚀');
-                        setTimeout(() => {
-                            if (selRole === 'admin') window.location.href = 'Admin.html';
-                            else if (selRole === 'teacher') window.location.href = 'Teacher.html';
-                            else window.location.href = 'studentdashboard.html';
-                        }, 1500);
-                        return;
-                    }
-                    document.getElementById('loginText').textContent = 'Login';
-                    document.getElementById('errText').textContent = 'Invalid email or password. Please try again.';
-                    err.classList.add('show');
+                    // User authenticated but no local data - create basic user
+                    const basicUser = {
+                        firstName: 'User',
+                        lastName: '',
+                        email: email,
+                        role: selRole
+                    };
+                    localStorage.setItem('pyquest_current_user', JSON.stringify(basicUser));
+                    showToast('Welcome! 🎉');
+                    setTimeout(() => {
+                        if (selRole === 'admin') window.location.href = 'Admin.html';
+                        else if (selRole === 'teacher') window.location.href = 'Teacher.html';
+                        else window.location.href = 'studentdashboard.html';
+                    }, 1500);
                 }
-            }, 1200);
+            } catch (error) {
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('loginIcon').style.display = 'inline';
+                document.getElementById('loginBtn').disabled = false;
+                document.getElementById('loginText').textContent = 'Login';
+                document.getElementById('errText').textContent = 'Email or password is incorrect';
+                err.classList.add('show');
+            }
         }
 
         // DEMO LOGIN (quick button)
