@@ -405,6 +405,10 @@
         window.firebaseAuth = auth;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
 
+        // Force sign out when visiting login page to prevent auto-redirect
+        // This ensures users can always access the login form
+        auth.signOut().catch(() => {});
+        
         // Remove auto-redirect - only redirect after manual login
         // This prevents automatic redirect when visiting login page
     </script>

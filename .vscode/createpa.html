@@ -336,6 +336,9 @@
         window.firebaseAuth = auth;
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 
+        // Force sign out when visiting create account page
+        auth.signOut().catch(() => {});
+
         // Remove auto-redirect - only redirect after manual registration
         // This prevents automatic redirect when visiting create account page
     </script>
