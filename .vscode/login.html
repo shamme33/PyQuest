@@ -405,21 +405,8 @@
         window.firebaseAuth = auth;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
 
-        // Auth state listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in, redirect to dashboard based on role
-                const userData = JSON.parse(localStorage.getItem('pyquest_current_user') || '{}');
-                const role = userData.role;
-                if (role === 'admin') {
-                    window.location.href = 'Admin.html';
-                } else if (role === 'teacher') {
-                    window.location.href = 'Teacher.html';
-                } else {
-                    window.location.href = 'studentdashboard.html';
-                }
-            }
-        });
+        // Remove auto-redirect - only redirect after manual login
+        // This prevents automatic redirect when visiting login page
     </script>
     <script>
         // PASSWORD TOGGLE

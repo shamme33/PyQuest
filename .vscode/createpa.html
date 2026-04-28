@@ -336,21 +336,8 @@
         window.firebaseAuth = auth;
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 
-        // Auth state listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in, redirect to dashboard based on role
-                const userData = JSON.parse(localStorage.getItem('pyquest_current_user') || '{}');
-                const role = userData.role;
-                if (role === 'admin') {
-                    window.location.href = 'Admin.html';
-                } else if (role === 'teacher') {
-                    window.location.href = 'Teacher.html';
-                } else {
-                    window.location.href = 'studentdashboard.html';
-                }
-            }
-        });
+        // Remove auto-redirect - only redirect after manual registration
+        // This prevents automatic redirect when visiting create account page
     </script>
     <script>
         function toggleP(id, iconId) {
