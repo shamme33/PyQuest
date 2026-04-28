@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Login - PyQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -405,6 +408,9 @@
         window.firebaseAuth = auth;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
 
+        // Clear any cached session data
+        localStorage.removeItem('pyquest_current_user');
+        
         // Force sign out when visiting login page to prevent auto-redirect
         // This ensures users can always access the login form
         auth.signOut().catch(() => {});
